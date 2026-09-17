@@ -47,7 +47,7 @@ function AssessmentPage() {
     await record.mutateAsync({
       childId,
       itemType: "assessment",
-      itemId: assessment.id,
+      itemId: assessmentId,
       score,
       maxScore: total,
       details: { answers },

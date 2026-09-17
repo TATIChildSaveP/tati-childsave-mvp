@@ -88,7 +88,7 @@ export function useRecordProgress() {
           status: "completed",
           score: input.score ?? null,
           max_score: input.maxScore ?? null,
-          details: input.details ?? {},
+          details: (input.details ?? {}) as never,
           updated_at: new Date().toISOString(),
         },
         { onConflict: "child_id,item_type,item_id" },
