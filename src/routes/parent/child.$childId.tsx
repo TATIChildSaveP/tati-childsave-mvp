@@ -72,8 +72,8 @@ function ParentChild() {
     );
   }
 
-  const done = (events ?? []).length;
-  const insights = buildInsights(track, events ?? []);
+  const done = progress.events.length;
+  const insights = progress.insights;
 
   return (
     <Page>
