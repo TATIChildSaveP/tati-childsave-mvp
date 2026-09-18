@@ -3,11 +3,10 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Screen, Card, PrimaryButton, ProgressBar } from "@/components/learning/primitives";
-import { findEvent, useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
-import { getTrack, itemPath, itemTitle } from "@/lib/learning/track";
-import { buildSkillGrowth, stillDeveloping, strengths } from "@/lib/learning/growth";
-import { conversationStarters, journeySnapshot, skillSentence } from "@/lib/learning/parent-insights";
-import { computeGamification } from "@/lib/gamification/engine";
+import { useAddChild, useChildren } from "@/lib/learning/progress";
+import { itemTitle } from "@/lib/learning/track";
+import { skillSentence } from "@/lib/learning/parent-insights";
+import { useChildProgress } from "@/lib/progress/service";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -121,22 +120,13 @@ function Dashboard() {
 }
 
 function ChildCard({ childId, name, age }: { childId: string; name: string; age: number }) {
-  const track = getTrack("save");
-  const { data: events, isLoading, isError } = useProgress(childId);
-  const list = events ?? [];
-  const snapshot = journeySnapshot(track, list);
-  const game = computeGamification(track, events);
-  const growth = buildSkillGrowth(
-    findEvent(list, "assessment", "save-pre"),
-    findEvent(list, "assessment", "save-post"),
-  );
-  const strong = strengths(growth, 3);
-  const growing = stillDeveloping(growth, 2);
-  const starters = conversationStarters(name, track, list, growth);
-  const hasPost = !!findEvent(list, "assessment", "save-post");
-  const continuePath = snapshot.currentItem
-    ? itemPath(childId, snapshot.currentItem)
-    : `/learn/${childId}`;
+  const progress = useChildProgress(childId);
+  const { track, journey: snapshot, game, competency, isLoading, isError, continuePath } = progress;
+  const growth = competency.growth;
+  const strong = competency.strengths.slice(0, 3);
+  const growing = competency.stillDeveloping.slice(0, 2);
+  const starters = progress.conversationStarters;
+  const hasPost = progress.assessments.postDone;
 
   return (
     <Card>
