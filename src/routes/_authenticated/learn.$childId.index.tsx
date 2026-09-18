@@ -54,7 +54,6 @@ function Journey() {
   const allDone = currentIndex === -1;
 
   const goal = track.goal;
-  const target = goal?.target ?? 80;
   const saved = progress.journey.savedCedis;
   const savedPct = progress.journey.savedPct;
   const dayNumber = progress.journey.dayNumber;
