@@ -125,6 +125,14 @@ export const saveTrack: Track = {
       reward: 0,
     },
     {
+      kind: "scenario",
+      id: "kwame-request",
+      label: "FRIENDSHIP & MONEY",
+      blurb: "Kwame asks to borrow GH₵10 while you are saving for your school bag.",
+      icon: "🤝",
+      reward: 0,
+    },
+    {
       kind: "lesson",
       id: "stop-think-choose",
       label: "SIGNATURE RULE",

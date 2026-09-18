@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { Screen, Card, TopBar, PrimaryButton, ChoiceButton, GhanaCedi } from "@/components/learning/primitives";
+import { ScenarioPlayer } from "@/components/scenario/ScenarioPlayer";
 import { useRecordProgress } from "@/lib/learning/progress";
+import { getScenarioDefinition } from "@/lib/scenario/registry";
 import { getScenario, getTrack } from "@/lib/learning/track";
 import type { ScenarioChoice } from "@/lib/learning/types";
 
@@ -29,6 +31,7 @@ interface HistoryEntry {
 
 function ScenarioPage() {
   const { childId, scenarioId } = useParams({ from: "/_authenticated/learn/$childId/scenario/$scenarioId" });
+  const branching = getScenarioDefinition(scenarioId);
   const track = getTrack("save");
   const scenario = getScenario(track, scenarioId);
   const navigate = useNavigate();
@@ -40,10 +43,38 @@ function ScenarioPage() {
   const [pending, setPending] = useState<ScenarioChoice | null>(null);
   const [finished, setFinished] = useState(false);
 
+  // Branching stories run on the reusable scenario engine.
+  if (branching) {
+    return (
+      <ScenarioPlayer
+        scenario={branching}
+        childId={childId}
+        saving={record.isPending}
+        onComplete={async ({ available, saved, decisions }) => {
+          await record.mutateAsync({
+            childId,
+            itemType: "scenario",
+            itemId: branching.id,
+            details: { available, saved, decisions },
+          });
+          navigate({ to: "/learn/$childId", params: { childId } });
+        }}
+      />
+    );
+  }
+
   if (!scenario) {
     return (
       <Screen>
         <TopBar title="Story not found" backTo={`/learn/${childId}`} />
+        <Card>
+          <p className="text-lg">We could not find this story. Let's head back to your journey.</p>
+          <div className="mt-4">
+            <PrimaryButton onClick={() => navigate({ to: "/learn/$childId", params: { childId } })}>
+              Back to my journey
+            </PrimaryButton>
+          </div>
+        </Card>
       </Screen>
     );
   }

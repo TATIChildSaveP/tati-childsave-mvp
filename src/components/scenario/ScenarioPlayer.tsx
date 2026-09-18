@@ -1,0 +1,375 @@
+import { Link } from "@tanstack/react-router";
+import { COMPETENCY_LABELS } from "@/lib/assessment/types";
+import { dayProgressPercent } from "@/lib/scenario/engine";
+import { useScenarioRunner } from "@/lib/scenario/useScenarioRunner";
+import type { ScenarioDefinition } from "@/lib/scenario/types";
+import { Screen, PrimaryButton } from "@/components/learning/primitives";
+import { cn } from "@/lib/utils";
+
+interface Props {
+  scenario: ScenarioDefinition;
+  childId: string;
+  onComplete: (payload: { available: number; saved: number; decisions: unknown[] }) => void;
+  saving?: boolean | undefined;
+}
+
+/** Renders any scenario from the engine. Holds no story logic of its own. */
+export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props) {
+  const runner = useScenarioRunner(scenario, childId);
+  const { state, node, summary, status } = runner;
+  const dayPct = dayProgressPercent(scenario, state);
+
+  if (status === "loading") {
+    return (
+      <Screen>
+        <p className="rounded-3xl border border-dashed border-border p-8 text-center text-muted-foreground">
+          Opening your story…
+        </p>
+      </Screen>
+    );
+  }
+
+  return (
+    <Screen>
+      <header className="mb-4 flex items-center gap-3">
+        <Link
+          to="/learn/$childId"
+          params={{ childId }}
+          aria-label="Back to my journey"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-secondary text-secondary-foreground"
+        >
+          <span aria-hidden="true">←</span>
+        </Link>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-base font-bold">{scenario.title}</p>
+          <p className="truncate text-sm text-muted-foreground">{scenario.subtitle}</p>
+        </div>
+        <span className="rounded-full bg-primary-soft px-3 py-1.5 text-sm font-semibold text-primary">
+          🔊 Listen
+        </span>
+      </header>
+
+      {status === "interrupted" ? (
+        <p className="mb-4 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning-foreground">
+          We cannot save your story on this device right now, so please try to finish it in one go.
+        </p>
+      ) : null}
+      {status === "resumed" && state.phase !== "complete" ? (
+        <p className="mb-4 rounded-2xl bg-success-soft px-4 py-3 text-sm text-success">
+          Welcome back! We kept your story exactly where you left it.
+        </p>
+      ) : null}
+
+      {/* Day + money strip */}
+      <section className="mb-4">
+        <div className="flex items-center justify-between text-sm font-semibold">
+          <span>
+            📅 Day {state.day} of {scenario.totalDays}
+          </span>
+          <span className="text-primary">{dayPct}% completed</span>
+        </div>
+        <div
+          className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={dayPct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Story progress"
+        >
+          <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${dayPct}%` }} />
+        </div>
+        <div className="mt-3 grid grid-cols-3 gap-2">
+          <Stat label="Pocket" value={`GH₵${state.available}`} note="Available" />
+          <Stat label="Saved" value={`GH₵${state.saved}`} note="In box" tone="success" />
+          <Stat label="Target" value={`GH₵${state.goalTarget}`} note={scenario.goalLabel} tone="accent" />
+        </div>
+      </section>
+
+      <GoalCard
+        label={scenario.goalLabel}
+        saved={state.saved}
+        target={state.goalTarget}
+      />
+
+      {state.phase === "intro" ? (
+        <section className="mt-4 rounded-3xl border border-border bg-card p-5 shadow-sm">
+          {scenario.intro.image ? (
+            <img
+              src={scenario.intro.image}
+              alt=""
+              className="mb-4 h-44 w-full rounded-2xl object-cover"
+            />
+          ) : null}
+          <h2 className="text-xl font-bold">{scenario.intro.title}</h2>
+          <p className="mt-2 text-muted-foreground">{scenario.intro.body}</p>
+          <div className="mt-5">
+            <PrimaryButton onClick={runner.start}>{scenario.intro.cta ?? "Let's go"}</PrimaryButton>
+          </div>
+        </section>
+      ) : null}
+
+      {state.phase === "decision" && node ? (
+        <section className="mt-4">
+          {node.image ? (
+            <figure className="relative mb-4 overflow-hidden rounded-3xl border border-border">
+              <img src={node.image} alt={node.imageCaption ?? node.title} className="h-48 w-full object-cover" />
+              {node.imageBadge ? (
+                <figcaption className="absolute right-3 top-3 rounded-full bg-card/90 px-3 py-1 text-xs font-bold">
+                  {node.imageBadge}
+                </figcaption>
+              ) : null}
+            </figure>
+          ) : null}
+
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+              {node.topic ? (
+                <span className="rounded-full bg-primary-soft px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary">
+                  {node.topic}
+                </span>
+              ) : null}
+              {node.place ? <span className="text-sm text-muted-foreground">📍 {node.place}</span> : null}
+            </div>
+            <h2 className="text-xl font-bold">{node.title}</h2>
+            <p className="mt-2 text-muted-foreground">{node.situation}</p>
+            {node.quote ? (
+              <blockquote className="mt-3 rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground">
+                <p className="text-sm font-bold">{node.quote.speaker}</p>
+                <p className="mt-1 italic">“{node.quote.text}”</p>
+              </blockquote>
+            ) : null}
+            {node.question ? <p className="mt-3 font-semibold text-primary">❓ {node.question}</p> : null}
+          </div>
+
+          <div className="mt-3 space-y-3">
+            {node.choices.map((choice) => (
+              <button
+                key={choice.id}
+                type="button"
+                onClick={() => runner.choose(choice.id)}
+                className="flex min-h-[64px] w-full items-center gap-3 rounded-3xl border border-border bg-card px-4 py-3 text-left shadow-sm transition-colors hover:border-primary"
+              >
+                <span
+                  aria-hidden="true"
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary text-lg"
+                >
+                  {choice.icon ?? "•"}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-bold">{choice.label}</span>
+                  {choice.description ? (
+                    <span className="block text-sm text-muted-foreground">{choice.description}</span>
+                  ) : null}
+                </span>
+                <span aria-hidden="true" className="text-muted-foreground">
+                  ›
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {node.tip ? (
+            <p className="mt-4 rounded-2xl bg-accent-soft px-4 py-3 text-sm text-accent-foreground">
+              💡 <span className="font-bold">TATI Tip:</span> {node.tip}
+            </p>
+          ) : null}
+        </section>
+      ) : null}
+
+      {state.phase === "consequence" && state.consequence ? (
+        <section className="mt-4">
+          {state.consequence.decisionChip ? (
+            <p className="mb-3 inline-block rounded-full bg-accent-soft px-4 py-2 text-sm font-bold text-accent-foreground">
+              🤝 {state.consequence.decisionChip}
+            </p>
+          ) : null}
+          <h2 className="text-2xl font-bold">{state.consequence.headline}</h2>
+
+          {state.consequence.image ? (
+            <figure className="relative mt-3 overflow-hidden rounded-3xl border border-border">
+              <img src={state.consequence.image} alt="" className="h-48 w-full object-cover" />
+              {state.consequence.imageCaption ? (
+                <figcaption className="absolute bottom-3 right-3 rounded-full bg-foreground/80 px-3 py-1 text-xs font-semibold text-background">
+                  {state.consequence.imageCaption}
+                </figcaption>
+              ) : null}
+            </figure>
+          ) : null}
+
+          <div className="mt-4 rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-bold">🧾 Ledger update</p>
+              {state.consequence.ledgerNote ? (
+                <span className="rounded-full bg-secondary px-3 py-1 text-sm font-semibold">
+                  {state.consequence.ledgerNote}
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-muted p-4">
+                <p className="text-sm font-semibold">In pocket</p>
+                <p className="text-xl font-bold">GH₵{state.available}</p>
+                <p className="text-sm text-muted-foreground">Available to spend</p>
+              </div>
+              <div className="rounded-2xl bg-success-soft p-4">
+                <p className="text-sm font-semibold text-success">Saved box</p>
+                <p className="text-xl font-bold text-success">GH₵{state.saved}</p>
+                <p className="text-sm text-muted-foreground">Untouched & protected</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm">
+              Total on hand: <span className="font-bold">GH₵{state.available + state.saved}</span>
+            </p>
+          </div>
+
+          <div className="mt-3 rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <h3 className="font-bold">⚖️ {state.consequence.title}</h3>
+            <p className="mt-1 text-muted-foreground">{state.consequence.body}</p>
+          </div>
+
+          {state.consequence.laterHint ? (
+            <div className="mt-3 rounded-3xl bg-primary-soft p-5">
+              <h3 className="font-bold text-primary">⏳ Something might happen later…</h3>
+              <p className="mt-1 text-sm">{state.consequence.laterHint}</p>
+            </div>
+          ) : null}
+
+          <div className="mt-4">
+            <GoalCard label={scenario.goalLabel} saved={state.saved} target={state.goalTarget} />
+          </div>
+
+          <div className="mt-4">
+            <PrimaryButton onClick={runner.continueOn}>Continue journey →</PrimaryButton>
+          </div>
+        </section>
+      ) : null}
+
+      {state.phase === "complete" ? (
+        <section className="mt-4 space-y-3">
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <h2 className="text-xl font-bold">{summary.ending?.title ?? "Your story so far"}</h2>
+            <p className="mt-1 text-muted-foreground">{summary.ending?.body}</p>
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl bg-muted p-4">
+                <p className="text-sm">In pocket</p>
+                <p className="text-xl font-bold">GH₵{summary.available}</p>
+              </div>
+              <div className="rounded-2xl bg-success-soft p-4">
+                <p className="text-sm text-success">Saved</p>
+                <p className="text-xl font-bold text-success">GH₵{summary.saved}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {summary.stillNeeded > 0
+                ? `GH₵${summary.stillNeeded} more to reach your ${scenario.goalLabel.toLowerCase()}.`
+                : "You reached your goal amount!"}
+            </p>
+          </div>
+
+          {summary.strengths.length ? (
+            <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+              <h3 className="font-bold">🌟 Your superpowers in this story</h3>
+              <ul className="mt-2 flex flex-wrap gap-2">
+                {summary.strengths.map((c) => (
+                  <li key={c} className="rounded-full bg-accent-soft px-3 py-1 text-sm font-semibold text-accent-foreground">
+                    {COMPETENCY_LABELS[c]}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
+
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <h3 className="font-bold">📖 The choices you made</h3>
+            <ul className="mt-2 space-y-2">
+              {summary.decisions.map((d, i) => (
+                <li key={i} className="rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                  <span className="font-semibold">Day {d.day} · {d.choiceLabel}</span>
+                  <span className="block text-muted-foreground">
+                    Pocket GH₵{d.availableAfter} · Saved GH₵{d.savedAfter}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-sm">{summary.ending?.reflection ?? scenario.closingReflection}</p>
+          </div>
+
+          <PrimaryButton
+            onClick={() => {
+              runner.clearSaved();
+              onComplete({ available: state.available, saved: state.saved, decisions: state.decisions });
+            }}
+            disabled={!!saving}
+          >
+            {saving ? "Saving…" : "Save and continue"}
+          </PrimaryButton>
+          <button
+            type="button"
+            onClick={runner.restart}
+            className="min-h-[48px] w-full rounded-2xl border border-border bg-card text-base font-semibold"
+          >
+            Try the story a different way
+          </button>
+        </section>
+      ) : null}
+    </Screen>
+  );
+}
+
+function Stat({
+  label,
+  value,
+  note,
+  tone = "default",
+}: {
+  label: string;
+  value: string;
+  note: string;
+  tone?: "default" | "success" | "accent";
+}) {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-3 text-center shadow-sm">
+      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <p
+        className={cn(
+          "text-lg font-bold",
+          tone === "success" && "text-success",
+          tone === "accent" && "text-accent-foreground",
+        )}
+      >
+        {value}
+      </p>
+      <p className="text-xs text-muted-foreground">{note}</p>
+    </div>
+  );
+}
+
+function GoalCard({ label, saved, target }: { label: string; saved: number; target: number }) {
+  const pct = Math.min(100, Math.round((saved / target) * 100));
+  return (
+    <section className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-center justify-between gap-2">
+        <p className="font-bold">🎒 {label}</p>
+        <p className="text-sm font-semibold">
+          GH₵{saved} of GH₵{target}
+        </p>
+      </div>
+      <div
+        className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-muted"
+        role="progressbar"
+        aria-valuenow={pct}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-label={label}
+      >
+        <div className="h-full rounded-full bg-success transition-all" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-2 flex justify-between text-sm">
+        <span className="text-muted-foreground">{pct}% reached</span>
+        <span className="font-semibold text-accent-foreground">
+          {Math.max(0, target - saved) > 0 ? `GH₵${target - saved} more needed` : "Goal reached 🎉"}
+        </span>
+      </div>
+    </section>
+  );
+}
