@@ -30,8 +30,19 @@ export interface ScenarioState {
   consequence?: ScenarioConsequence | undefined;
   decisions: ScenarioDecisionLog[];
   endingId?: string | undefined;
+  /** Money values before the last decision, used for the "GH₵22 → GH₵12" ledger. */
+  previousAvailable?: number | undefined;
+  previousSaved?: number | undefined;
+  /** Running story totals used by the closing reflection. */
+  totals: ScenarioTotals;
   /** ISO timestamp of the last save, used by the resume state. */
   updatedAt: string;
+}
+
+export interface ScenarioTotals {
+  earned: number;
+  spent: number;
+  movedToSavings: number;
 }
 
 export type ScenarioPhase = "intro" | "decision" | "consequence" | "complete";
@@ -70,6 +81,8 @@ export interface ScenarioConsequence {
   imageCaption?: string;
   /** Short note beside the ledger, e.g. "−GH₵10 for Kwame". */
   ledgerNote?: string;
+  /** Outstanding debt note, e.g. "Kwame still owes GH₵5". */
+  debtNote?: string | undefined;
   /** Hint that something will happen on a later day. */
   laterHint?: string;
   reflection?: string;
@@ -156,6 +169,8 @@ export interface ScenarioSummary {
   goalPercent: number;
   stillNeeded: number;
   decisions: ScenarioDecisionLog[];
+  totals: ScenarioTotals;
+  reachedGoal: boolean;
   ending?: ScenarioEnding | undefined;
   strengths: Competency[];
 }

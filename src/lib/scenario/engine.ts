@@ -25,6 +25,7 @@ export function createInitialState(scenario: ScenarioDefinition): ScenarioState 
     competencies: {},
     flags: {},
     scheduled: [],
+    totals: { earned: 0, spent: 0, movedToSavings: 0 },
     nodeId: scenario.startNodeId,
     phase: "intro",
     decisions: [],
@@ -65,10 +66,20 @@ export function applyChoice(
     });
   }
 
+  const cashChange = effect.available ?? 0;
+  const totals = {
+    earned: state.totals.earned + Math.max(0, cashChange),
+    spent: state.totals.spent + Math.max(0, -cashChange) + Math.max(0, -(effect.saved ?? 0)),
+    movedToSavings: state.totals.movedToSavings + transfer + Math.max(0, effect.saved ?? 0),
+  };
+
   return {
     ...state,
     available,
     saved,
+    previousAvailable: state.available,
+    previousSaved: state.saved,
+    totals,
     competencies,
     flags: { ...state.flags, ...(effect.flags ?? {}) },
     scheduled,
@@ -142,6 +153,8 @@ export function summarize(scenario: ScenarioDefinition, state: ScenarioState): S
     .map(([k]) => k);
 
   return {
+    totals: state.totals,
+    reachedGoal: state.saved >= state.goalTarget,
     totalOnHand: state.available + state.saved,
     available: state.available,
     saved: state.saved,
