@@ -52,40 +52,7 @@ export function useProgress(childId: string) {
   return useQuery(progressQuery(childId));
 }
 
-export interface RecordInput {
-  childId: string;
-  itemType: "assessment" | "lesson" | "scenario" | "reflection";
-  itemId: string;
-  score?: number;
-  maxScore?: number;
-  details?: Record<string, unknown>;
-}
-
-export function useRecordProgress() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: RecordInput) => {
-      const { error } = await supabase.from("learning_progress").upsert(
-        {
-          child_profile_id: input.childId,
-          track_id: "save",
-          item_type: input.itemType,
-          item_id: input.itemId,
-          status: "completed",
-          score: input.score ?? null,
-          max_score: input.maxScore ?? null,
-          details: (input.details ?? {}) as never,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "child_profile_id,item_type,item_id" },
-      );
-      if (error) throw error;
-    },
-    onSuccess: (_d, input) => {
-      qc.invalidateQueries({ queryKey: ["progress", input.childId] });
-    },
-  });
-}
+// Recording progress lives in the Progress Service: @/lib/progress/service
 
 /** Kept for the existing parent dashboard: adds a learner to the signed-in parent's family. */
 export function useAddChild() {
