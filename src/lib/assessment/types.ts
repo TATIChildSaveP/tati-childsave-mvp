@@ -34,6 +34,8 @@ export const COMPETENCY_LABELS: Record<Competency, string> = {
 export interface AnswerOption {
   id: string;
   label: string;
+  /** Short plain-language explanation shown under the option label. */
+  description?: string;
   /** Optional friendly icon shown beside the option. */
   icon?: string;
   /** Points for choosing this option; defaults come from scoring rules. */
