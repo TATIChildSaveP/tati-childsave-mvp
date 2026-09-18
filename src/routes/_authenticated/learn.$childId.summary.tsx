@@ -2,11 +2,7 @@ import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { Screen, Card, TopBar } from "@/components/learning/primitives";
 import { SkillBars } from "@/components/gamification/SkillBars";
 import { BadgeGrid } from "@/components/gamification/BadgeGrid";
-import { useGamification } from "@/lib/gamification/useGamification";
-import { findEvent, useChild, useProgress } from "@/lib/learning/progress";
-import { getTrack } from "@/lib/learning/track";
-import { buildInsights } from "@/lib/learning/insights";
-import { buildSkillGrowth, growthHeadline, stillDeveloping, strengths } from "@/lib/learning/growth";
+import { useChildProgress } from "@/lib/progress/service";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/summary")({
   head: () => ({
@@ -27,24 +23,17 @@ export const Route = createFileRoute("/_authenticated/learn/$childId/summary")({
 
 function SummaryPage() {
   const { childId } = useParams({ from: "/_authenticated/learn/$childId/summary" });
-  const track = getTrack("save");
-  const { child } = useChild(childId);
-  const { data: events, isLoading } = useProgress(childId);
-  const game = useGamification(childId);
-
-  const pre = findEvent(events, "assessment", "save-pre");
-  const post = findEvent(events, "assessment", "save-post");
-  const growth = buildSkillGrowth(pre, post);
-  const strong = strengths(growth);
-  const growing = stillDeveloping(growth);
-  const insights = buildInsights(track, events ?? []);
+  const { game, competency, assessments, insights, isLoading } = useChildProgress(childId);
+  const strong = competency.strengths;
+  const growing = competency.stillDeveloping;
+  const post = assessments.postDone;
 
   return (
     <Screen>
       <TopBar title="My money skills" backTo={`/learn/${childId}`} />
 
       <Card className="bg-accent text-accent-foreground">
-        <h2 className="text-2xl font-bold">{growthHeadline(growth, child?.name)}</h2>
+        <h2 className="text-2xl font-bold">{competency.headline}</h2>
         <p className="mt-1">
           You finished {game.journey.done} of {game.journey.total} stops, earned {game.xp} XP and collected{" "}
           {game.earnedBadges.length} badge{game.earnedBadges.length === 1 ? "" : "s"}.
