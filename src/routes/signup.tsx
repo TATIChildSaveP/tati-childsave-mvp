@@ -1,16 +1,19 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Page, PageHeader, Card, Button } from "@/components/tati";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { Page, PageHeader, Card, CardTitle, CardNote, Button, Badge } from "@/components/tati";
 
 export const Route = createFileRoute("/signup")({
+  ssr: false,
   head: () => ({
     meta: [
-      { title: "Create your guardian account — TATI ChildSave" },
+      { title: "Create your parent account — TATI ChildSave" },
       {
         name: "description",
-        content: "Create a TATI ChildSave guardian account and set up a private learner profile for your child.",
+        content: "Create a TATI ChildSave parent account and set up a private learner profile for your child.",
       },
-      { property: "og:title", content: "Create your guardian account — TATI ChildSave" },
+      { property: "og:title", content: "Create your parent account — TATI ChildSave" },
       { property: "og:description", content: "Set up a safe learner profile for your child in minutes." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -19,74 +22,206 @@ export const Route = createFileRoute("/signup")({
   component: SignupPage,
 });
 
+const inputClass =
+  "min-h-[56px] w-full rounded-2xl border border-border bg-background px-4 text-base font-bold";
+
 function SignupPage() {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [agreed, setAgreed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      if (session) navigate({ to: "/parent", replace: true });
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) navigate({ to: "/parent", replace: true });
+    });
+    return () => sub.subscription.unsubscribe();
+  }, [navigate]);
+
+  const longEnough = password.length >= 8;
+  const hasNumberOrSymbol = /[\d\W]/.test(password);
+  const matches = confirm.length > 0 && confirm === password;
+  const canSubmit = fullName.trim() && email.trim() && longEnough && matches && agreed && !busy;
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    setNote(null);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: { emailRedirectTo: window.location.origin, data: { full_name: fullName.trim() } },
+      });
+      if (signUpError) throw signUpError;
+      if (!data.session) {
+        setNote("Almost there — check your email and tap the link to confirm your account.");
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "We couldn't create that account. Please try again.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleGoogle() {
+    setError(null);
+    const result = await lovable.auth.signInWithOAuth("google", {
+      redirect_uri: window.location.origin,
+    });
+    if (result.error) setError("Google sign-in didn't work. Please try again.");
+  }
 
   return (
     <Page>
-      <PageHeader backTo="/" eyebrow="Guardian account" title="Create your account" />
-      <Card>
-        <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+      <PageHeader backTo="/" eyebrow="Parent portal" title="Create your parent account" />
+
+      <Card tone="muted" className="mb-5">
+        <div className="flex items-start justify-between gap-3">
           <div>
-            <label htmlFor="name" className="mb-1 block text-sm font-extrabold">
+            <CardTitle>👪 Guardian setup</CardTitle>
+            <CardNote>
+              Set up your guardian profile to connect, guide and follow your child's money journey.
+            </CardNote>
+          </div>
+          <Badge tone="success" icon="🛡">
+            Safe
+          </Badge>
+        </div>
+      </Card>
+
+      <Card>
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="name" className="mb-1 block text-base font-bold">
               Your name
             </label>
             <input
               id="name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Akosua Mensah"
-              className="min-h-[48px] w-full rounded-2xl border border-border bg-background px-4 text-base"
+              placeholder="Ms. Mensah"
+              className={inputClass}
             />
           </div>
           <div>
-            <label htmlFor="email" className="mb-1 block text-sm font-extrabold">
-              Email
+            <label htmlFor="email" className="mb-1 block text-base font-bold">
+              Email address
             </label>
             <input
               id="email"
               type="email"
+              autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="min-h-[48px] w-full rounded-2xl border border-border bg-background px-4 text-base"
+              placeholder="parent.mensah@gmail.com"
+              className={inputClass}
             />
           </div>
           <div>
-            <label htmlFor="password" className="mb-1 block text-sm font-extrabold">
-              Password
-            </label>
+            <div className="mb-1 flex items-baseline justify-between">
+              <label htmlFor="password" className="text-base font-bold">
+                Password
+              </label>
+              <span className="text-sm text-muted-foreground">Min. 8 characters</span>
+            </div>
             <input
               id="password"
               type="password"
+              autoComplete="new-password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 6 characters"
-              className="min-h-[48px] w-full rounded-2xl border border-border bg-background px-4 text-base"
+              className={inputClass}
             />
+            <div className="mt-2 flex flex-wrap gap-2">
+              <Badge tone={longEnough ? "success" : "neutral"}>
+                {longEnough ? "✓" : "•"} 8+ characters
+              </Badge>
+              <Badge tone={hasNumberOrSymbol ? "success" : "neutral"}>
+                {hasNumberOrSymbol ? "✓" : "•"} Number or symbol
+              </Badge>
+            </div>
           </div>
-          <Button to="/onboarding" size="lg">
-            Continue to profile setup →
+          <div>
+            <label htmlFor="confirm" className="mb-1 block text-base font-bold">
+              Confirm password
+            </label>
+            <input
+              id="confirm"
+              type="password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              className={inputClass}
+            />
+            {confirm ? (
+              <p className={`mt-2 text-sm font-bold ${matches ? "text-success" : "text-muted-foreground"}`}>
+                {matches ? "✓ Passwords match" : "Passwords don't match yet"}
+              </p>
+            ) : null}
+          </div>
+
+          <label className="flex min-h-[48px] items-start gap-3 rounded-2xl bg-muted p-4 text-base">
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+              className="mt-1 h-5 w-5"
+            />
+            <span>
+              <span className="font-bold">I agree to the Terms and Child Privacy Policy.</span>{" "}
+              <span className="text-muted-foreground">
+                TATI protects children's privacy — no bank accounts and no intrusive tracking.
+              </span>
+            </span>
+          </label>
+
+          {error ? (
+            <p role="alert" className="rounded-2xl bg-danger-soft p-3 text-base font-bold text-danger">
+              {error}
+            </p>
+          ) : null}
+          {note ? (
+            <p role="status" className="rounded-2xl bg-success-soft p-3 text-base font-bold text-success">
+              {note}
+            </p>
+          ) : null}
+
+          <Button type="submit" size="lg" disabled={!canSubmit}>
+            {busy ? "Creating your account…" : "Create Account →"}
           </Button>
         </form>
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Your child never needs an email, phone number or password. They learn under your guardian
-          account. The live account form is on the{" "}
-          <Link to="/auth" className="font-extrabold text-primary">
-            secure account page
+
+        <div className="my-5 text-center text-sm font-extrabold uppercase tracking-wide text-muted-foreground">
+          or sign up with
+        </div>
+        <Button variant="outline" onClick={handleGoogle}>
+          Continue with Google
+        </Button>
+
+        <p className="mt-4 text-center text-base">
+          Already have an account?{" "}
+          <Link to="/login" className="font-extrabold text-primary">
+            Sign in
           </Link>
-          .
         </p>
       </Card>
 
-      <p className="mt-5 text-center text-base">
-        Already have an account?{" "}
-        <Link to="/login" className="font-extrabold text-primary">
-          Sign in
-        </Link>
-      </p>
+      <Card tone="muted" className="mt-5">
+        <CardNote>
+          🔒 Your child never needs an email, phone number or password. They learn under your
+          guardian account.
+        </CardNote>
+      </Card>
     </Page>
   );
 }
