@@ -115,8 +115,11 @@ export function advance(scenario: ScenarioDefinition, state: ScenarioState): Sce
   );
   const day = Math.min(scenario.totalDays, state.day + (choice?.effect?.advanceDays ?? 1));
 
+  // A scheduled follow-up wins when its day arrives before (or on) the next planned node.
+  const planned = state.nextNodeId ? getNode(scenario, state.nextNodeId) : undefined;
+  const horizon = Math.max(day, planned?.day ?? day);
   const due = state.scheduled
-    .filter((e) => e.dueDay <= day && (!e.requiresFlag || !!state.flags[e.requiresFlag]))
+    .filter((e) => e.dueDay <= horizon && (!e.requiresFlag || !!state.flags[e.requiresFlag]))
     .sort((a, b) => a.dueDay - b.dueDay)[0];
 
   const nextId = due?.nodeId ?? state.nextNodeId;
