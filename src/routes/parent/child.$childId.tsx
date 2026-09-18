@@ -6,12 +6,16 @@ import {
   CardTitle,
   Avatar,
   Button,
-  StatCard,
   ProgressRing,
   LessonCard,
   EmptyState,
+  LoadingState,
+  ErrorState,
 } from "@/components/tati";
-import { mockChildren, mockLessons, mockInsights } from "@/content/mock";
+import { useChildProfile } from "@/lib/family";
+import { useProgress, isDone } from "@/lib/learning/progress";
+import { getTrack } from "@/lib/learning/track";
+import { buildInsights } from "@/lib/learning/insights";
 
 export const Route = createFileRoute("/parent/child/$childId")({
   head: () => ({
@@ -32,7 +36,27 @@ export const Route = createFileRoute("/parent/child/$childId")({
 
 function ParentChild() {
   const { childId } = Route.useParams();
-  const child = mockChildren.find((c) => c.id === childId);
+  const { child, isLoading, isError, refetch } = useChildProfile(childId);
+  const { data: events } = useProgress(childId);
+  const track = getTrack("save");
+
+  if (isLoading) {
+    return (
+      <Page>
+        <PageHeader backTo="/parent" title="Child journey" />
+        <LoadingState label="Loading this learner…" />
+      </Page>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Page>
+        <PageHeader backTo="/parent" title="Child journey" />
+        <ErrorState onRetry={() => void refetch()} />
+      </Page>
+    );
+  }
 
   if (!child) {
     return (
@@ -47,6 +71,9 @@ function ParentChild() {
     );
   }
 
+  const done = (events ?? []).length;
+  const insights = buildInsights(track, events ?? []);
+
   return (
     <Page>
       <PageHeader backTo="/parent" eyebrow="Parent portal" title={`${child.name}'s journey`} />
@@ -58,24 +85,24 @@ function ParentChild() {
             {child.name}, {child.age}
           </CardTitle>
           <p className="text-base text-muted-foreground">
-            {child.className} · {child.teacher}
+            {child.curriculum_level ?? `Primary ${Math.max(1, child.age - 5)}`} · TATI Junior
           </p>
         </div>
       </Card>
 
       <div className="mt-4 flex justify-center">
-        <ProgressRing value={child.saved} max={child.target} caption="Towards the goal" tone="success" size={120} />
-      </div>
-
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        <StatCard label="Available" money={child.available} tone="primary" />
-        <StatCard label="Saved" money={child.saved} tone="success" />
-        <StatCard label="Target" money={child.target} tone="warning" />
+        <ProgressRing
+          value={done}
+          max={track.sequence.length}
+          caption="Journey steps done"
+          tone="success"
+          size={120}
+        />
       </div>
 
       <h2 className="mb-3 mt-6 text-lg font-extrabold">What we're noticing</h2>
       <Card className="space-y-2">
-        {mockInsights.map((insight, i) => (
+        {insights.map((insight, i) => (
           <p key={i} className="text-base">
             • {insight}
           </p>
@@ -84,19 +111,19 @@ function ParentChild() {
 
       <h2 className="mb-3 mt-6 text-lg font-extrabold">Lessons</h2>
       <Card className="space-y-3">
-        {mockLessons.map((lesson, i) => (
+        {track.lessons.map((lesson, i) => (
           <LessonCard
             key={lesson.id}
             index={i + 1}
             title={lesson.title}
-            subtitle={lesson.subtitle}
-            minutes={lesson.minutes}
-            status={lesson.status}
+            subtitle={`Lesson · ${lesson.minutes ?? 5} min`}
+            minutes={lesson.minutes ?? 5}
+            status={isDone(events, "lesson", lesson.id) ? "done" : "ready"}
           />
         ))}
       </Card>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-3">
         <Button to="/parent" variant="secondary">
           Back to all children
         </Button>
