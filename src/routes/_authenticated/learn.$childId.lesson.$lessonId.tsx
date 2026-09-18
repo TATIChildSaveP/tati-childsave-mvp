@@ -1,8 +1,8 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
-import { useState } from "react";
-import { Screen, Card, TopBar, PrimaryButton, ChoiceButton } from "@/components/learning/primitives";
+import { Screen, TopBar } from "@/components/learning/primitives";
+import { LessonPlayer, type LessonDraft } from "@/components/lesson/LessonPlayer";
 import { useRecordProgress } from "@/lib/learning/progress";
-import { getLesson, getTrack } from "@/lib/learning/track";
+import { getLessonById, lessonsForTrack } from "@/lib/lessons/registry";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/lesson/$lessonId")({
   head: () => ({
@@ -20,11 +20,9 @@ export const Route = createFileRoute("/_authenticated/learn/$childId/lesson/$les
 
 function LessonPage() {
   const { childId, lessonId } = useParams({ from: "/_authenticated/learn/$childId/lesson/$lessonId" });
-  const track = getTrack("save");
-  const lesson = getLesson(track, lessonId);
+  const lesson = getLessonById(lessonId);
   const navigate = useNavigate();
   const record = useRecordProgress();
-  const [checkpoint, setCheckpoint] = useState<string | null>(null);
 
   if (!lesson) {
     return (
@@ -34,74 +32,46 @@ function LessonPage() {
     );
   }
 
-  async function finish() {
-    await record.mutateAsync({ childId, itemType: "lesson", itemId: lessonId, details: { checkpoint } });
-    navigate({ to: "/learn/$childId", params: { childId } });
+  const all = lessonsForTrack(lesson.track);
+  const index = all.findIndex((l) => l.id === lesson.id);
+
+  async function finish(draft: LessonDraft) {
+    if (!lesson) return;
+    await record.mutateAsync({
+      childId,
+      itemType: "lesson",
+      itemId: lesson.id,
+      score: lesson.xpReward,
+      maxScore: lesson.xpReward,
+      details: {
+        xp: lesson.xpReward,
+        competencies: lesson.competencies,
+        quickCheck: draft.quickCheck,
+        activityChoice: draft.activityChoice,
+        sorted: draft.sorted,
+        allocation: draft.allocation,
+        reflection: draft.reflection,
+      },
+    });
+    try {
+      localStorage.removeItem(`tati.lesson.${lesson.id}`);
+    } catch {
+      /* ignore */
+    }
+    if (lesson.nextLesson) {
+      navigate({ to: "/learn/$childId/lesson/$lessonId", params: { childId, lessonId: lesson.nextLesson } });
+    } else {
+      navigate({ to: "/learn/$childId", params: { childId } });
+    }
   }
 
   return (
-    <Screen>
-      <TopBar title={lesson.title} backTo={`/learn/${childId}`} />
-
-      <Card className="mb-5 bg-accent text-accent-foreground">
-        <p className="text-sm font-semibold uppercase tracking-widest">Big idea</p>
-        <p className="mt-1 text-lg font-bold">{lesson.bigIdea}</p>
-      </Card>
-
-      <div className="space-y-4">
-        {lesson.blocks.map((block, i) => {
-          if (block.type === "text") {
-            return (
-              <p key={i} className="text-lg leading-relaxed">
-                {block.body}
-              </p>
-            );
-          }
-          if (block.type === "highlight") {
-            return (
-              <Card key={i} className="border-primary bg-primary/5">
-                <p className="text-lg font-semibold">{block.body}</p>
-              </Card>
-            );
-          }
-          if (block.type === "example") {
-            return (
-              <Card key={i}>
-                <h3 className="text-lg font-bold">{block.title}</h3>
-                <p className="mt-1 text-lg leading-relaxed">{block.body}</p>
-              </Card>
-            );
-          }
-          return (
-            <Card key={i}>
-              <h3 className="text-lg font-bold">{block.prompt}</h3>
-              <div className="mt-3 space-y-2">
-                {block.options.map((opt) => (
-                  <ChoiceButton
-                    key={opt.id}
-                    state={checkpoint === opt.id ? "selected" : checkpoint ? "muted" : "idle"}
-                    onClick={() => setCheckpoint(opt.id)}
-                  >
-                    {opt.label}
-                  </ChoiceButton>
-                ))}
-              </div>
-              {checkpoint ? (
-                <p className="mt-3 rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground">
-                  {checkpoint === block.bestOptionId ? "Nice thinking. " : "Interesting choice. "}
-                  {block.feedback}
-                </p>
-              ) : null}
-            </Card>
-          );
-        })}
-      </div>
-
-      <div className="mt-8">
-        <PrimaryButton onClick={finish} disabled={record.isPending}>
-          {record.isPending ? "Saving…" : "I've finished this lesson"}
-        </PrimaryButton>
-      </div>
-    </Screen>
+    <LessonPlayer
+      lesson={lesson}
+      backTo={`/learn/${childId}`}
+      stepLabel={index >= 0 ? `Lesson ${index + 1} of ${all.length}` : undefined}
+      saving={record.isPending}
+      onComplete={finish}
+    />
   );
 }
