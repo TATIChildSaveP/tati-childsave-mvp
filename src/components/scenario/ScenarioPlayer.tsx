@@ -299,7 +299,7 @@ export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props)
               runner.clearSaved();
               onComplete({ available: state.available, saved: state.saved, decisions: state.decisions });
             }}
-            disabled={saving}
+            disabled={!!saving}
           >
             {saving ? "Saving…" : "Save and continue"}
           </PrimaryButton>
