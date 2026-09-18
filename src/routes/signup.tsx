@@ -186,7 +186,7 @@ function SignupPage() {
           </label>
 
           {error ? (
-            <p role="alert" className="rounded-2xl bg-danger-soft p-3 text-base font-bold text-danger">
+            <p role="alert" className="rounded-2xl bg-warning-soft p-3 text-base font-bold text-destructive">
               {error}
             </p>
           ) : null}
