@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Screen, Card, PrimaryButton, ProgressBar } from "@/components/learning/primitives";
-import { useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
+import { findEvent, useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
 import { getTrack } from "@/lib/learning/track";
 import { buildInsights } from "@/lib/learning/insights";
+import { buildSkillGrowth, stillDeveloping, strengths } from "@/lib/learning/growth";
+import { computeGamification } from "@/lib/gamification/engine";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -125,6 +127,13 @@ function ChildCard({ childId, name, age }: { childId: string; name: string; age:
     events?.some((e) => e.item_type === item.kind && e.item_id === item.id),
   ).length;
   const insights = buildInsights(track, events ?? []);
+  const game = computeGamification(track, events);
+  const growth = buildSkillGrowth(
+    findEvent(events, "assessment", "save-pre"),
+    findEvent(events, "assessment", "save-post"),
+  );
+  const strong = strengths(growth, 3);
+  const growing = stillDeveloping(growth, 3);
 
   return (
     <Card>
