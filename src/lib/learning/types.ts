@@ -73,16 +73,46 @@ export interface Scenario {
   closingReflection: string;
 }
 
-export type TrackItem =
-  | { kind: "assessment"; id: string }
-  | { kind: "lesson"; id: string }
-  | { kind: "scenario"; id: string };
+export type TrackItemKind = "assessment" | "lesson" | "scenario";
+
+/**
+ * One stop on the adventure trail. Presentation copy lives in the data so the
+ * trail screen stays a pure renderer.
+ */
+export interface TrackItem {
+  kind: TrackItemKind;
+  id: string;
+  /** Trail label, e.g. "LESSON", "DILEMMA", "FRAMEWORK". */
+  label?: string;
+  /** One-line child-friendly description shown under the title. */
+  blurb?: string;
+  /** Short chip, e.g. "Saved GH₵10". */
+  chip?: string;
+  /** Emoji shown for upcoming steps. */
+  icon?: string;
+  /** Cedis added to the goal jar when this step is cleared. */
+  reward?: number;
+}
+
+/** The term-long challenge that frames the whole track. */
+export interface TrackGoal {
+  challengeName: string;
+  title: string;
+  /** Savings target in GH₵. */
+  target: number;
+  daysTotal: number;
+  finaleTitle: string;
+  finaleBody: string;
+}
 
 export interface Track {
   id: string;
   tier: Tier;
   name: string;
   tagline: string;
+  /** Story line shown on the trail banner. */
+  storyline?: string;
+  goal?: TrackGoal;
   assessments: Assessment[];
   lessons: Lesson[];
   scenarios: Scenario[];
