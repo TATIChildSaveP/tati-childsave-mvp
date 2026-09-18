@@ -333,7 +333,7 @@ export const schoolReopeningScenario: ScenarioDefinition = {
             body: "Mum sent GH₵5 of your pocket money into her wallet for you and wrote it down. Money you cannot reach easily is money that stays.",
             ledgerNote: "GH₵5 → savings",
           },
-          next: "torn-sandal",
+          next: "water-errand",
         },
         {
           id: "box",
@@ -348,7 +348,7 @@ export const schoolReopeningScenario: ScenarioDefinition = {
             body: "Your box sits on the shelf where you can see your progress. Just remember: what you can open easily, you can also empty easily.",
             ledgerNote: "No change",
           },
-          next: "torn-sandal",
+          next: "water-errand",
         },
         {
           id: "pocket",
