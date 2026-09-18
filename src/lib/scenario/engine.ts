@@ -25,6 +25,7 @@ export function createInitialState(scenario: ScenarioDefinition): ScenarioState 
     competencies: {},
     flags: {},
     scheduled: [],
+    totals: { earned: 0, spent: 0, movedToSavings: 0 },
     nodeId: scenario.startNodeId,
     phase: "intro",
     decisions: [],
@@ -47,7 +48,9 @@ export function applyChoice(
   if (!node || !choice) return state;
 
   const effect = choice.effect ?? {};
-  const transfer = effect.transferToSaved ?? 0;
+  const transfer = effect.transferAllToSaved
+    ? Math.max(0, state.available)
+    : (effect.transferToSaved ?? 0);
   const available = state.available + (effect.available ?? 0) - transfer;
   const saved = state.saved + (effect.saved ?? 0) + transfer;
 
@@ -62,13 +65,24 @@ export function applyChoice(
     scheduled.push({
       dueDay: state.day + choice.schedule.inDays,
       nodeId: choice.schedule.nodeId,
+      ...(choice.schedule.requiresFlag ? { requiresFlag: choice.schedule.requiresFlag } : {}),
     });
   }
+
+  const cashChange = effect.available ?? 0;
+  const totals = {
+    earned: state.totals.earned + Math.max(0, cashChange),
+    spent: state.totals.spent + Math.max(0, -cashChange) + Math.max(0, -(effect.saved ?? 0)),
+    movedToSavings: state.totals.movedToSavings + transfer + Math.max(0, effect.saved ?? 0),
+  };
 
   return {
     ...state,
     available,
     saved,
+    previousAvailable: state.available,
+    previousSaved: state.saved,
+    totals,
     competencies,
     flags: { ...state.flags, ...(effect.flags ?? {}) },
     scheduled,
@@ -103,8 +117,11 @@ export function advance(scenario: ScenarioDefinition, state: ScenarioState): Sce
   );
   const day = Math.min(scenario.totalDays, state.day + (choice?.effect?.advanceDays ?? 1));
 
+  // A scheduled follow-up wins when its day arrives before (or on) the next planned node.
+  const planned = state.nextNodeId ? getNode(scenario, state.nextNodeId) : undefined;
+  const horizon = Math.max(day, planned?.day ?? day);
   const due = state.scheduled
-    .filter((e) => e.dueDay <= day && (!e.requiresFlag || !!state.flags[e.requiresFlag]))
+    .filter((e) => e.dueDay <= horizon && (!e.requiresFlag || !!state.flags[e.requiresFlag]))
     .sort((a, b) => a.dueDay - b.dueDay)[0];
 
   const nextId = due?.nodeId ?? state.nextNodeId;
@@ -142,6 +159,8 @@ export function summarize(scenario: ScenarioDefinition, state: ScenarioState): S
     .map(([k]) => k);
 
   return {
+    totals: state.totals,
+    reachedGoal: state.saved >= state.goalTarget,
     totalOnHand: state.available + state.saved,
     available: state.available,
     saved: state.saved,

@@ -66,7 +66,9 @@ export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props)
           <span>
             📅 Day {state.day} of {scenario.totalDays}
           </span>
-          <span className="text-primary">{dayPct}% completed</span>
+          <span className="text-primary">
+            {state.phase === "consequence" ? "● Decision Consequence" : `${dayPct}% completed`}
+          </span>
         </div>
         <div
           className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted"
@@ -208,15 +210,34 @@ export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props)
             <div className="mt-3 grid grid-cols-2 gap-3">
               <div className="rounded-2xl bg-muted p-4">
                 <p className="text-sm font-semibold">In pocket</p>
-                <p className="text-xl font-bold">GH₵{state.available}</p>
+                <p className="text-xl font-bold">
+                  {state.previousAvailable !== undefined && state.previousAvailable !== state.available ? (
+                    <span className="mr-2 text-base font-semibold text-muted-foreground line-through">
+                      GH₵{state.previousAvailable}
+                    </span>
+                  ) : null}
+                  GH₵{state.available}
+                </p>
                 <p className="text-sm text-muted-foreground">Available to spend</p>
               </div>
               <div className="rounded-2xl bg-success-soft p-4">
                 <p className="text-sm font-semibold text-success">Saved box</p>
-                <p className="text-xl font-bold text-success">GH₵{state.saved}</p>
-                <p className="text-sm text-muted-foreground">Untouched & protected</p>
+                <p className="text-xl font-bold text-success">
+                  {state.previousSaved !== undefined && state.previousSaved !== state.saved ? (
+                    <span className="mr-2 text-base font-semibold text-muted-foreground line-through">
+                      GH₵{state.previousSaved}
+                    </span>
+                  ) : null}
+                  GH₵{state.saved}
+                </p>
+                <p className="text-sm text-muted-foreground">Untouched &amp; protected</p>
               </div>
             </div>
+            {state.consequence.debtNote ? (
+              <p className="mt-3 rounded-2xl bg-warning-soft px-4 py-2 text-sm font-semibold text-warning-foreground">
+                ⏳ {state.consequence.debtNote}
+              </p>
+            ) : null}
             <p className="mt-3 text-sm">
               Total on hand: <span className="font-bold">GH₵{state.available + state.saved}</span>
             </p>
@@ -278,6 +299,32 @@ export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props)
               </ul>
             </div>
           ) : null}
+
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <h3 className="font-bold">🪞 Looking back at your 14 days</h3>
+            <ul className="mt-2 space-y-2 text-sm">
+              <li>
+                💪 You earned <span className="font-bold">GH₵{summary.totals.earned}</span> through work and money
+                that came back to you.
+              </li>
+              <li>
+                🐖 You moved <span className="font-bold">GH₵{summary.totals.movedToSavings}</span> into your savings
+                box.
+              </li>
+              <li>
+                🛒 You spent or shared <span className="font-bold">GH₵{summary.totals.spent}</span> along the way.
+              </li>
+              <li>
+                🔁 When plans changed, you made{" "}
+                <span className="font-bold">{summary.decisions.length}</span> decisions and kept going.
+              </li>
+            </ul>
+            <p className="mt-3 rounded-2xl bg-primary-soft px-4 py-3 text-sm text-primary">
+              {summary.reachedGoal
+                ? "You reached your school bag amount — and you can see exactly which choices got you there."
+                : "You did not reach GH₵80 this time, and that is completely fine. Finishing the journey and noticing what happened is real progress."}
+            </p>
+          </div>
 
           <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
             <h3 className="font-bold">📖 The choices you made</h3>
