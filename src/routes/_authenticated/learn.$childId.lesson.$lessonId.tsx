@@ -3,6 +3,7 @@ import { Screen, TopBar } from "@/components/learning/primitives";
 import { LessonPlayer, type LessonDraft } from "@/components/lesson/LessonPlayer";
 import { useRecordProgress } from "@/lib/learning/progress";
 import { getLessonById, lessonsForTrack } from "@/lib/lessons/registry";
+import { celebrateStep } from "@/components/gamification/celebrate";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/lesson/$lessonId")({
   head: () => ({
@@ -58,6 +59,7 @@ function LessonPage() {
     } catch {
       /* ignore */
     }
+    celebrateStep("lesson", lesson.title);
     if (lesson.nextLesson) {
       navigate({ to: "/learn/$childId/lesson/$lessonId", params: { childId, lessonId: lesson.nextLesson } });
     } else {
