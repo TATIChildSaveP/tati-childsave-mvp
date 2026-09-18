@@ -76,14 +76,14 @@ function Landing() {
       </div>
 
       <div className="mt-6 space-y-3">
-        <Button to="/onboarding" size="lg">
-          Start My Journey →
+        <Button to="/signup" size="lg">
+          Create Parent Account →
         </Button>
         <Button to="/login" variant="outline" size="lg">
-          Continue My Journey
+          I already have an account
         </Button>
         <Button to="/parent" variant="ghost">
-          Parent portal
+          Continue My Journey
         </Button>
       </div>
 

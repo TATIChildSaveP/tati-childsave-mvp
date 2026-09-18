@@ -1,9 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  childProfilesQuery,
+  useChildProfiles,
+  useCreateChildProfile,
+  type ChildProfile,
+} from "@/lib/family";
 
 export interface ProgressEvent {
   id: string;
-  child_id: string;
+  child_profile_id: string;
   track_id: string;
   item_type: string;
   item_id: string;
@@ -15,38 +21,18 @@ export interface ProgressEvent {
   updated_at: string;
 }
 
-export interface Child {
-  id: string;
-  parent_id: string;
-  name: string;
-  age: number;
-  avatar: string;
-  tier: string;
-  created_at: string;
-}
+export type Child = ChildProfile;
 
-export function childrenQuery() {
-  return {
-    queryKey: ["children"],
-    queryFn: async (): Promise<Child[]> => {
-      const { data, error } = await supabase
-        .from("children")
-        .select("*")
-        .order("created_at", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as Child[];
-    },
-  };
-}
+export { childProfilesQuery as childrenQuery };
 
 export function progressQuery(childId: string) {
   return {
     queryKey: ["progress", childId],
     queryFn: async (): Promise<ProgressEvent[]> => {
       const { data, error } = await supabase
-        .from("progress_events")
+        .from("learning_progress")
         .select("*")
-        .eq("child_id", childId);
+        .eq("child_profile_id", childId);
       if (error) throw error;
       return (data ?? []) as unknown as ProgressEvent[];
     },
@@ -54,7 +40,7 @@ export function progressQuery(childId: string) {
 }
 
 export function useChildren() {
-  return useQuery(childrenQuery());
+  return useChildProfiles();
 }
 
 export function useChild(childId: string) {
@@ -79,9 +65,9 @@ export function useRecordProgress() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: async (input: RecordInput) => {
-      const { error } = await supabase.from("progress_events").upsert(
+      const { error } = await supabase.from("learning_progress").upsert(
         {
-          child_id: input.childId,
+          child_profile_id: input.childId,
           track_id: "save",
           item_type: input.itemType,
           item_id: input.itemId,
@@ -91,7 +77,7 @@ export function useRecordProgress() {
           details: (input.details ?? {}) as never,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: "child_id,item_type,item_id" },
+        { onConflict: "child_profile_id,item_type,item_id" },
       );
       if (error) throw error;
     },
@@ -101,23 +87,9 @@ export function useRecordProgress() {
   });
 }
 
+/** Kept for the existing parent dashboard: adds a learner to the signed-in parent's family. */
 export function useAddChild() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (input: { name: string; age: number; avatar: string }) => {
-      const { data: userData } = await supabase.auth.getUser();
-      const parentId = userData.user?.id;
-      if (!parentId) throw new Error("You need to be signed in.");
-      const { error } = await supabase.from("children").insert({
-        parent_id: parentId,
-        name: input.name,
-        age: input.age,
-        avatar: input.avatar,
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["children"] }),
-  });
+  return useCreateChildProfile();
 }
 
 export function isDone(events: ProgressEvent[] | undefined, itemType: string, itemId: string) {

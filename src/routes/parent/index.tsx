@@ -1,6 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Page, PageHeader, Card, CardTitle, CardNote, Avatar, Button, ProgressBar, Badge } from "@/components/tati";
-import { mockChildren, mockLessons } from "@/content/mock";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useChildProfiles, useSession } from "@/lib/family";
+import {
+  Page,
+  PageHeader,
+  Card,
+  CardTitle,
+  CardNote,
+  Avatar,
+  Button,
+  Badge,
+  LoadingState,
+  EmptyState,
+  ErrorState,
+} from "@/components/tati";
 
 export const Route = createFileRoute("/parent/")({
   head: () => ({
@@ -20,17 +34,63 @@ export const Route = createFileRoute("/parent/")({
 });
 
 function ParentHome() {
+  const { data: session } = useSession();
+  const { data: children, isLoading, isError, refetch } = useChildProfiles();
+  const navigate = useNavigate();
+  const qc = useQueryClient();
+
+  async function signOut() {
+    await qc.cancelQueries();
+    qc.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/login", replace: true });
+  }
+
+  const parentName =
+    (session?.user_metadata?.["full_name"] as string | undefined) ?? session?.email ?? "there";
+
   return (
     <Page>
       <PageHeader
-        backTo="/"
         eyebrow="Parent portal"
-        title="Your children"
-        subtitle="A quick look at where each learner has reached."
+        title="Your family"
+        subtitle={`Welcome back, ${parentName}.`}
+        right={
+          <button
+            type="button"
+            onClick={signOut}
+            className="min-h-[48px] px-2 text-sm font-extrabold text-muted-foreground"
+          >
+            Sign out
+          </button>
+        }
       />
 
+      {isLoading ? <LoadingState label="Loading your family…" /> : null}
+
+      {isError ? (
+        <ErrorState
+          title="We couldn't load your family"
+          description="Check your connection and try again."
+          onRetry={() => void refetch()}
+        />
+      ) : null}
+
+      {!isLoading && !isError && children?.length === 0 ? (
+        <EmptyState
+          icon="🌱"
+          title="No learner yet"
+          description="Add your child and their TATI adventure begins right away."
+          action={
+            <Button to="/onboarding" size="lg">
+              Add my child →
+            </Button>
+          }
+        />
+      ) : null}
+
       <div className="space-y-4">
-        {mockChildren.map((child) => (
+        {children?.map((child) => (
           <Card key={child.id}>
             <div className="flex items-center gap-3">
               <Avatar avatar={child.avatar} name={child.name} size="md" />
@@ -39,43 +99,39 @@ function ParentHome() {
                   {child.name}, {child.age}
                 </CardTitle>
                 <CardNote className="truncate">
-                  {child.className} · {child.school}
+                  {child.curriculum_level ?? `Primary ${Math.max(1, child.age - 5)}`} · TATI Junior
                 </CardNote>
               </div>
-              <Badge tone="primary">TATI Junior</Badge>
+              <Badge tone="primary">Junior</Badge>
             </div>
 
-            <div className="mt-4">
-              <ProgressBar
-                value={child.lessonsDone}
-                max={mockLessons.length}
-                label={`${child.lessonsDone} of ${mockLessons.length} lessons`}
-                showPercent
-                tone="success"
-              />
-            </div>
-
-            <div className="mt-4">
+            <div className="mt-4 space-y-3">
+              <Link
+                to="/learn/$childId"
+                params={{ childId: child.id }}
+                className="flex min-h-[56px] w-full items-center justify-center rounded-2xl bg-primary text-lg font-extrabold text-primary-foreground"
+              >
+                Continue {child.name}'s journey →
+              </Link>
               <Link
                 to="/parent/child/$childId"
                 params={{ childId: child.id }}
-                className="flex min-h-[48px] w-full items-center justify-center rounded-2xl bg-primary text-base font-extrabold text-primary-foreground"
+                className="flex min-h-[48px] w-full items-center justify-center rounded-2xl border-2 border-border bg-card text-base font-extrabold"
               >
-                View {child.name}'s journey →
+                See progress and insights
               </Link>
             </div>
           </Card>
         ))}
       </div>
 
-      <div className="mt-6 space-y-3">
-        <Button to="/onboarding" variant="outline">
-          + Add another child
-        </Button>
-        <Button to="/dashboard" variant="ghost">
-          Open my live account dashboard
-        </Button>
-      </div>
+      {children && children.length > 0 ? (
+        <div className="mt-6">
+          <Button to="/onboarding" variant="outline">
+            + Add another child
+          </Button>
+        </div>
+      ) : null}
     </Page>
   );
 }
