@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Page, Card, Button, Badge, ListenButton, StatCard } from "@/components/tati";
+import heroImage from "@/assets/tati-hero.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -37,14 +38,21 @@ function Landing() {
         <ListenButton />
       </header>
 
-      <Card className="p-0">
-        <div className="relative flex h-48 items-end justify-between rounded-t-3xl bg-accent-soft p-4">
+      <Card className="overflow-hidden p-0">
+        <div className="relative">
+          <img
+            src={heroImage}
+            alt="Two Ghanaian school children dropping cedi coins into a savings jar"
+            width={1024}
+            height={640}
+            className="h-52 w-full object-cover"
+          />
           <span className="absolute right-4 top-4">
             <Badge tone="warning" solid icon="🎓">
               Ages 8–12
             </Badge>
           </span>
-          <span className="rounded-full bg-card px-4 py-2 text-base font-extrabold shadow-card">
+          <span className="absolute bottom-4 left-4 rounded-full bg-card px-4 py-2 text-base font-extrabold shadow-card">
             <span aria-hidden="true">🟢</span> Goal: <span className="text-success">GH₵50</span>
           </span>
         </div>
