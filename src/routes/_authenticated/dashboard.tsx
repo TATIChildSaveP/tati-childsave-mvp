@@ -159,6 +159,35 @@ function ChildCard({ childId, name, age }: { childId: string; name: string; age:
         />
       </div>
 
+      <div className="mt-4 flex flex-wrap gap-2 text-sm">
+        <span className="rounded-full bg-accent-soft px-3 py-1 font-semibold text-accent-foreground">
+          ⭐ Level {game.level} · {game.xp} XP
+        </span>
+        <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
+          🏅 {game.earnedBadges.length} badge{game.earnedBadges.length === 1 ? "" : "s"}
+        </span>
+        {game.streak.currentDays > 0 ? (
+          <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
+            🔥 {game.streak.currentDays}-day streak
+          </span>
+        ) : null}
+      </div>
+
+      {strong.length > 0 ? (
+        <div className="mt-4 rounded-2xl bg-secondary/60 p-4">
+          <p className="text-sm font-bold">Strongest skills</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {strong.map((s) => s.label).join(", ")}
+            {growth.some((g) => g.grew) ? " — several grew since the first check-in." : "."}
+          </p>
+          {growing.length > 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Still developing: {growing.map((s) => s.label).join(", ")}.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
       <ul className="mt-4 space-y-2">
         {insights.map((insight) => (
           <li key={insight} className="rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
