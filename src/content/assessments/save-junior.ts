@@ -1,4 +1,7 @@
 import type { AssessmentDefinition } from "@/lib/assessment/types";
+import welcomeScene from "@/assets/checkin-20.png.asset.json";
+import snackScene from "@/assets/checkin-21.png.asset.json";
+import celebrationScene from "@/assets/checkin-22.png.asset.json";
 
 // TATI Junior (ages 8–12), Ghana. Scenario-style questions, never exam language.
 // Pure data — no UI, no database access.
