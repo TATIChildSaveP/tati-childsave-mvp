@@ -192,6 +192,10 @@ function Journey() {
         </ol>
       )}
 
+      <div className="mt-6">
+        <BadgeGrid badges={game.badges} />
+      </div>
+
       {/* Grand finale */}
       {goal ? (
         <section className="mt-4 ml-11 rounded-3xl border-2 border-accent bg-accent-soft p-5">
@@ -232,6 +236,29 @@ function Journey() {
       ) : null}
 
       <p className="sr-only">{child ? `Journey for ${child.name}` : "Journey"}</p>
+
+      {showJourneyCelebration ? (
+        <CelebrationOverlay
+          title={child ? `You did it, ${child.name}! 🎉` : "You did it! 🎉"}
+          message="You completed your whole TATI money journey — every lesson, every choice and every pause to think."
+          badgeIcons={game.earnedBadges.map((b) => b.definition.icon)}
+          xp={game.xp}
+          primaryLabel="See how my skills grew →"
+          onPrimary={() => {
+            dismissJourneyCelebration();
+            navigate({ to: "/learn/$childId/summary", params: { childId } });
+          }}
+          secondary={
+            <button
+              type="button"
+              onClick={dismissJourneyCelebration}
+              className="min-h-[44px] w-full text-sm font-semibold text-muted-foreground"
+            >
+              Stay on my journey map
+            </button>
+          }
+        />
+      ) : null}
     </Screen>
   );
 }
