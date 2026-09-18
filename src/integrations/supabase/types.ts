@@ -14,6 +14,59 @@ export type Database = {
   }
   public: {
     Tables: {
+      child_profiles: {
+        Row: {
+          age: number
+          avatar: string
+          created_at: string
+          created_by: string
+          curriculum_level: string | null
+          family_id: string
+          id: string
+          name: string
+          onboarding_completed: boolean
+          onboarding_step: number
+          tier: string
+          updated_at: string
+        }
+        Insert: {
+          age?: number
+          avatar?: string
+          created_at?: string
+          created_by: string
+          curriculum_level?: string | null
+          family_id: string
+          id?: string
+          name: string
+          onboarding_completed?: boolean
+          onboarding_step?: number
+          tier?: string
+          updated_at?: string
+        }
+        Update: {
+          age?: number
+          avatar?: string
+          created_at?: string
+          created_by?: string
+          curriculum_level?: string | null
+          family_id?: string
+          id?: string
+          name?: string
+          onboarding_completed?: boolean
+          onboarding_step?: number
+          tier?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "child_profiles_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       children: {
         Row: {
           age: number
@@ -52,21 +105,133 @@ export type Database = {
           },
         ]
       }
+      families: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      family_members: {
+        Row: {
+          created_at: string
+          family_id: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          family_id: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          family_id?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_family_id_fkey"
+            columns: ["family_id"]
+            isOneToOne: false
+            referencedRelation: "families"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learning_progress: {
+        Row: {
+          child_profile_id: string
+          created_at: string
+          details: Json
+          id: string
+          item_id: string
+          item_type: string
+          max_score: number | null
+          score: number | null
+          status: string
+          track_id: string
+          updated_at: string
+        }
+        Insert: {
+          child_profile_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          item_id: string
+          item_type: string
+          max_score?: number | null
+          score?: number | null
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Update: {
+          child_profile_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          item_id?: string
+          item_type?: string
+          max_score?: number | null
+          score?: number | null
+          status?: string
+          track_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_progress_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
           full_name: string | null
           id: string
+          updated_at: string
         }
         Insert: {
           created_at?: string
           full_name?: string | null
           id: string
+          updated_at?: string
         }
         Update: {
           created_at?: string
           full_name?: string | null
           id?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -125,7 +290,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_family_member: { Args: { _family_id: string }; Returns: boolean }
       owns_child: { Args: { _child_id: string }; Returns: boolean }
+      owns_child_profile: {
+        Args: { _child_profile_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
