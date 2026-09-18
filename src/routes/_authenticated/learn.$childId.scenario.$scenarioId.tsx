@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { useState } from "react";
 import { Screen, Card, TopBar, PrimaryButton, ChoiceButton, GhanaCedi } from "@/components/learning/primitives";
 import { ScenarioPlayer } from "@/components/scenario/ScenarioPlayer";
-import { useRecordProgress } from "@/lib/learning/progress";
+import { useRecordProgress } from "@/lib/progress/service";
 import { getScenarioDefinition } from "@/lib/scenario/registry";
 import { getScenario, getTrack, itemTitle } from "@/lib/learning/track";
 import type { ScenarioChoice } from "@/lib/learning/types";

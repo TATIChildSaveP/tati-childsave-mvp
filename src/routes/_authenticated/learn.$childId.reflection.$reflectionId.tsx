@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router";
 import { useState } from "react";
 import { Screen, Card, TopBar, PrimaryButton, ChoiceButton } from "@/components/learning/primitives";
-import { useRecordProgress } from "@/lib/learning/progress";
+import { useRecordProgress } from "@/lib/progress/service";
 import { getReflection, getTrack } from "@/lib/learning/track";
 import { celebrateStep } from "@/components/gamification/celebrate";
 

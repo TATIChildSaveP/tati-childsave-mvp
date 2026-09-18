@@ -1,12 +1,7 @@
-import { useMemo } from "react";
-import { useProgress } from "@/lib/learning/progress";
-import { getTrack } from "@/lib/learning/track";
-import { computeGamification } from "./engine";
+import { useChildProgress } from "@/lib/progress/service";
 
-/** Read-only gamification view for a learner. Derived, never stored twice. */
+/** Read-only gamification view, derived from the central Progress Service. */
 export function useGamification(childId: string, trackId = "save") {
-  const { data: events, isLoading, isError } = useProgress(childId);
-  const track = getTrack(trackId);
-  const state = useMemo(() => computeGamification(track, events), [track, events]);
-  return { ...state, isLoading, isError };
+  const { game, isLoading, isError } = useChildProgress(childId, trackId);
+  return { ...game, isLoading, isError };
 }
