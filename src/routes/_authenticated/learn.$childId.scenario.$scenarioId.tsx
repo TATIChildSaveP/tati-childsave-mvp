@@ -6,6 +6,7 @@ import { useRecordProgress } from "@/lib/learning/progress";
 import { getScenarioDefinition } from "@/lib/scenario/registry";
 import { getScenario, getTrack, itemTitle } from "@/lib/learning/track";
 import type { ScenarioChoice } from "@/lib/learning/types";
+import { celebrateStep } from "@/components/gamification/celebrate";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/scenario/$scenarioId")({
   head: () => ({
@@ -64,6 +65,7 @@ function ScenarioPage() {
             itemId: scenarioId,
             details: { available, saved, decisions, chapter: true },
           });
+          celebrateStep("scenario", "Chapter complete");
           navigate({ to: "/learn/$childId", params: { childId } });
         }}
         onComplete={async ({ available, saved, decisions }) => {
@@ -73,6 +75,7 @@ function ScenarioPage() {
             itemId: scenarioId,
             details: { available, saved, decisions },
           });
+          celebrateStep("scenario", "Story finished");
           navigate({ to: "/learn/$childId", params: { childId } });
         }}
       />

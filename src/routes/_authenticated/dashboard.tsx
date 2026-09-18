@@ -3,9 +3,11 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Screen, Card, PrimaryButton, ProgressBar } from "@/components/learning/primitives";
-import { useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
+import { findEvent, useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
 import { getTrack } from "@/lib/learning/track";
 import { buildInsights } from "@/lib/learning/insights";
+import { buildSkillGrowth, stillDeveloping, strengths } from "@/lib/learning/growth";
+import { computeGamification } from "@/lib/gamification/engine";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -125,6 +127,13 @@ function ChildCard({ childId, name, age }: { childId: string; name: string; age:
     events?.some((e) => e.item_type === item.kind && e.item_id === item.id),
   ).length;
   const insights = buildInsights(track, events ?? []);
+  const game = computeGamification(track, events);
+  const growth = buildSkillGrowth(
+    findEvent(events, "assessment", "save-pre"),
+    findEvent(events, "assessment", "save-post"),
+  );
+  const strong = strengths(growth, 3);
+  const growing = stillDeveloping(growth, 3);
 
   return (
     <Card>
@@ -149,6 +158,35 @@ function ChildCard({ childId, name, age }: { childId: string; name: string; age:
           label={`${done} of ${track.sequence.length} steps finished`}
         />
       </div>
+
+      <div className="mt-4 flex flex-wrap gap-2 text-sm">
+        <span className="rounded-full bg-accent-soft px-3 py-1 font-semibold text-accent-foreground">
+          ⭐ Level {game.level} · {game.xp} XP
+        </span>
+        <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
+          🏅 {game.earnedBadges.length} badge{game.earnedBadges.length === 1 ? "" : "s"}
+        </span>
+        {game.streak.currentDays > 0 ? (
+          <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
+            🔥 {game.streak.currentDays}-day streak
+          </span>
+        ) : null}
+      </div>
+
+      {strong.length > 0 ? (
+        <div className="mt-4 rounded-2xl bg-secondary/60 p-4">
+          <p className="text-sm font-bold">Strongest skills</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {strong.map((s) => s.label).join(", ")}
+            {growth.some((g) => g.grew) ? " — several grew since the first check-in." : "."}
+          </p>
+          {growing.length > 0 ? (
+            <p className="mt-2 text-sm text-muted-foreground">
+              Still developing: {growing.map((s) => s.label).join(", ")}.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
 
       <ul className="mt-4 space-y-2">
         {insights.map((insight) => (

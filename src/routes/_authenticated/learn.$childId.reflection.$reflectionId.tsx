@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Screen, Card, TopBar, PrimaryButton, ChoiceButton } from "@/components/learning/primitives";
 import { useRecordProgress } from "@/lib/learning/progress";
 import { getReflection, getTrack } from "@/lib/learning/track";
+import { celebrateStep } from "@/components/gamification/celebrate";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/reflection/$reflectionId")({
   head: () => ({
@@ -53,6 +54,7 @@ function ReflectionPage() {
       itemId: reflection!.id,
       details: { choiceId },
     });
+    celebrateStep("reflection");
     navigate({ to: "/learn/$childId", params: { childId } });
   }
 

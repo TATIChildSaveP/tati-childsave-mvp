@@ -1,5 +1,10 @@
 import { Fragment } from "react";
-import { createFileRoute, Link, useParams } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
+import { useGamification } from "@/lib/gamification/useGamification";
+import { XPCard } from "@/components/gamification/XPCard";
+import { BadgeGrid } from "@/components/gamification/BadgeGrid";
+import { CelebrationOverlay } from "@/components/gamification/CelebrationOverlay";
+import { useBadgeCelebrations } from "@/components/gamification/useBadgeCelebrations";
 import { Screen } from "@/components/learning/primitives";
 import { useChild, useProgress, isDone } from "@/lib/learning/progress";
 import { getTrack, itemPath, itemSubtitle, itemTitle } from "@/lib/learning/track";
@@ -34,6 +39,13 @@ function Journey() {
   const track = getTrack("save");
   const { child } = useChild(childId);
   const { data: events, isLoading, isError } = useProgress(childId);
+  const navigate = useNavigate();
+  const game = useGamification(childId);
+  const { showJourneyCelebration, dismissJourneyCelebration } = useBadgeCelebrations(
+    childId,
+    game.badges,
+    game.journeyComplete,
+  );
 
   const steps = track.sequence.map((item, index) => ({
     item,
@@ -127,6 +139,8 @@ function Journey() {
         </section>
       ) : null}
 
+      <XPCard state={game} />
+
       {/* Trail */}
       <div className="mb-3 flex items-end justify-between">
         <div>
@@ -134,7 +148,7 @@ function Journey() {
           <p className="text-sm text-muted-foreground">Tap a step to review or play</p>
         </div>
         <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-bold text-accent-foreground">
-          🏅 Level {Math.max(1, Math.ceil((doneCount || 1) / 4))} Saver
+          🏅 Level {game.level} {game.levelLabel}
         </span>
       </div>
 
@@ -178,6 +192,10 @@ function Journey() {
         </ol>
       )}
 
+      <div className="mt-6">
+        <BadgeGrid badges={game.badges} />
+      </div>
+
       {/* Grand finale */}
       {goal ? (
         <section className="mt-4 ml-11 rounded-3xl border-2 border-accent bg-accent-soft p-5">
@@ -218,6 +236,29 @@ function Journey() {
       ) : null}
 
       <p className="sr-only">{child ? `Journey for ${child.name}` : "Journey"}</p>
+
+      {showJourneyCelebration ? (
+        <CelebrationOverlay
+          title={child ? `You did it, ${child.name}! 🎉` : "You did it! 🎉"}
+          message="You completed your whole TATI money journey — every lesson, every choice and every pause to think."
+          badgeIcons={game.earnedBadges.map((b) => b.definition.icon)}
+          xp={game.xp}
+          primaryLabel="See how my skills grew →"
+          onPrimary={() => {
+            dismissJourneyCelebration();
+            navigate({ to: "/learn/$childId/summary", params: { childId } });
+          }}
+          secondary={
+            <button
+              type="button"
+              onClick={dismissJourneyCelebration}
+              className="min-h-[44px] w-full text-sm font-semibold text-muted-foreground"
+            >
+              Stay on my journey map
+            </button>
+          }
+        />
+      ) : null}
     </Screen>
   );
 }
