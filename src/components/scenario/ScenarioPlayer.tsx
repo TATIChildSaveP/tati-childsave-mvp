@@ -10,7 +10,7 @@ interface Props {
   scenario: ScenarioDefinition;
   childId: string;
   onComplete: (payload: { available: number; saved: number; decisions: unknown[] }) => void;
-  saving?: boolean;
+  saving?: boolean | undefined;
 }
 
 /** Renders any scenario from the engine. Holds no story logic of its own. */

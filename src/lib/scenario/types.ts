@@ -24,12 +24,12 @@ export interface ScenarioState {
   /** Node the learner is on. */
   nodeId: string;
   /** Node shown once the current consequence is acknowledged. */
-  nextNodeId?: string;
+  nextNodeId?: string | undefined;
   phase: ScenarioPhase;
   /** Consequence currently being shown. */
-  consequence?: ScenarioConsequence;
+  consequence?: ScenarioConsequence | undefined;
   decisions: ScenarioDecisionLog[];
-  endingId?: string;
+  endingId?: string | undefined;
   /** ISO timestamp of the last save, used by the resume state. */
   updatedAt: string;
 }
@@ -156,6 +156,6 @@ export interface ScenarioSummary {
   goalPercent: number;
   stillNeeded: number;
   decisions: ScenarioDecisionLog[];
-  ending?: ScenarioEnding;
+  ending?: ScenarioEnding | undefined;
   strengths: Competency[];
 }
