@@ -58,7 +58,7 @@ function AssessmentPage() {
       backTo={`/learn/${childId}`}
       saving={record.isPending}
       onComplete={finish}
-      {...(child.data?.name ? { childName: child.data.name } : {})}
+      {...(child.child?.name ? { childName: child.child.name } : {})}
     />
   );
 }
