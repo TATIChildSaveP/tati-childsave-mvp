@@ -1,4 +1,5 @@
 import { saveTrack } from "@/content/tracks/save";
+import { getLessonById } from "@/lib/lessons/registry";
 import type { Assessment, Lesson, Scenario, Track, TrackItem } from "./types";
 
 const TRACKS: Record<string, Track> = { [saveTrack.id]: saveTrack };
@@ -22,13 +23,19 @@ export function getAssessment(track: Track, id: string): Assessment | undefined 
 }
 
 export function itemTitle(track: Track, item: TrackItem): string {
-  if (item.kind === "lesson") return getLesson(track, item.id)?.title ?? item.id;
+  if (item.kind === "lesson")
+    return getLessonById(item.id)?.title ?? getLesson(track, item.id)?.title ?? item.id;
   if (item.kind === "scenario") return getScenario(track, item.id)?.title ?? item.id;
   return getAssessment(track, item.id)?.title ?? item.id;
 }
 
 export function itemSubtitle(track: Track, item: TrackItem): string {
-  if (item.kind === "lesson") return `Lesson · ${getLesson(track, item.id)?.minutes ?? 5} min`;
+  if (item.kind === "lesson") {
+    const engineLesson = getLessonById(item.id);
+    const minutes = engineLesson?.estimatedMinutes ?? getLesson(track, item.id)?.minutes ?? 5;
+    const xp = engineLesson ? ` · +${engineLesson.xpReward} pts` : "";
+    return `Lesson · ${minutes} min${xp}`;
+  }
   if (item.kind === "scenario") return "Decision story";
   return getAssessment(track, item.id)?.phase === "pre" ? "Starting check-in" : "Final check-in";
 }
