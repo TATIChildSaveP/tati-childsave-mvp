@@ -15,7 +15,6 @@ import {
 import { useChildProfile } from "@/lib/family";
 import { useChildProgress } from "@/lib/progress/service";
 import { getTrack } from "@/lib/learning/track";
-import { buildInsights } from "@/lib/learning/insights";
 
 export const Route = createFileRoute("/parent/child/$childId")({
   head: () => ({
