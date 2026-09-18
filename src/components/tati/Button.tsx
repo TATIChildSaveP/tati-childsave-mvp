@@ -56,7 +56,7 @@ export function Button({
 
   if (to) {
     return (
-      <Link to={to} params={params} className={classes} {...rest}>
+      <Link to={to} {...(params ? { params } : {})} className={classes} {...rest}>
         {children}
       </Link>
     );

@@ -69,7 +69,7 @@ export function LessonCard({
 
   if (to && status !== "locked") {
     return (
-      <Link to={to} params={params} className="block min-h-[48px]">
+      <Link to={to} {...(params ? { params } : {})} className="block min-h-[48px]">
         {body}
       </Link>
     );
@@ -133,7 +133,7 @@ export function ScenarioCard({
       {to ? (
         <Link
           to={to}
-          params={params}
+          {...(params ? { params } : {})}
           className="mt-4 flex min-h-[48px] w-full items-center justify-center rounded-2xl bg-success text-base font-extrabold text-success-foreground"
         >
           {status === "done" ? "Play again" : "Start challenge"} →
