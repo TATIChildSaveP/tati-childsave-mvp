@@ -63,6 +63,7 @@ export function applyChoice(
     scheduled.push({
       dueDay: state.day + choice.schedule.inDays,
       nodeId: choice.schedule.nodeId,
+      ...(choice.schedule.requiresFlag ? { requiresFlag: choice.schedule.requiresFlag } : {}),
     });
   }
 

@@ -98,7 +98,7 @@ export interface ScenarioChoice {
   /** Node to continue to. Choices may branch to different nodes. */
   next?: string;
   /** Consequence that only appears later in the story. */
-  schedule?: { inDays: number; nodeId: string };
+  schedule?: { inDays: number; nodeId: string; requiresFlag?: string };
   /** Ending reached when there is no next node. */
   ending?: string;
 }
