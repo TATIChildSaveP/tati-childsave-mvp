@@ -1,20 +1,20 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Screen, Card, PrimaryButton } from "@/components/learning/primitives";
+import { createFileRoute } from "@tanstack/react-router";
+import { Page, Card, Button, Badge, ListenButton, StatCard } from "@/components/tati";
+import heroImage from "@/assets/tati-hero.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "TATI ChildSave — money skills for African children" },
+      { title: "TATI ChildSave — money skills for Ghanaian children" },
       {
         name: "description",
         content:
-          "TATI ChildSave helps Ghanaian children aged 8–12 learn to save through stories, decisions and real-life money choices.",
+          "TATI ChildSave helps children aged 8–12 practise real money decisions with pocket money, savings goals and school challenges in Ghanaian cedis.",
       },
-      { property: "og:title", content: "TATI ChildSave — money skills for African children" },
+      { property: "og:title", content: "TATI ChildSave — money skills for Ghanaian children" },
       {
         property: "og:description",
-        content:
-          "Fun, warm lessons and decision stories that build financially smart, life-ready children.",
+        content: "Learn money skills. Make your own choices. Built for learners aged 8–12 in Ghana.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -25,50 +25,72 @@ export const Route = createFileRoute("/")({
 
 function Landing() {
   return (
-    <Screen>
-      <div className="pt-8">
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary">TATI ChildSave</p>
-        <h1 className="mt-3 text-4xl font-bold leading-tight">
-          Building Africa's next generation of financially smart children.
-        </h1>
-        <p className="mt-4 text-lg text-muted-foreground">
-          TATI Junior teaches children aged 8–12 how money really works — through Ghanaian stories,
-          real decisions and the consequences that follow.
-        </p>
-
-        <div className="mt-8 space-y-3">
-          <Link to="/auth">
-            <PrimaryButton>Create a parent account</PrimaryButton>
-          </Link>
-          <Link
-            to="/auth"
-            className="flex min-h-[48px] items-center justify-center rounded-2xl border border-border bg-card text-base font-semibold"
-          >
-            I already have an account
-          </Link>
+    <Page>
+      <header className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-lg font-extrabold text-primary">
+            TATI <span className="text-success">ChildSave</span>
+          </p>
+          <p className="text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            Financial capability for kids
+          </p>
         </div>
+        <ListenButton />
+      </header>
 
-        <div className="mt-10 grid gap-4">
-          <Card>
-            <h2 className="text-lg font-bold">Learn by deciding</h2>
-            <p className="mt-1 text-muted-foreground">
-              Children choose, see what happens, and adjust their plan — never shamed for a choice.
-            </p>
-          </Card>
-          <Card>
-            <h2 className="text-lg font-bold">The SAVE track</h2>
-            <p className="mt-1 text-muted-foreground">
-              A check-in, three lessons, two decision stories and a final check-in, all in cedis.
-            </p>
-          </Card>
-          <Card>
-            <h2 className="text-lg font-bold">Parents can follow along</h2>
-            <p className="mt-1 text-muted-foreground">
-              See progress, choices made and what your child is ready to talk about at home.
-            </p>
-          </Card>
+      <Card className="overflow-hidden p-0">
+        <div className="relative">
+          <img
+            src={heroImage}
+            alt="Two Ghanaian school children dropping cedi coins into a savings jar"
+            width={1024}
+            height={640}
+            className="h-52 w-full object-cover"
+          />
+          <span className="absolute right-4 top-4">
+            <Badge tone="warning" solid icon="🎓">
+              Ages 8–12
+            </Badge>
+          </span>
+          <span className="absolute bottom-4 left-4 rounded-full bg-card px-4 py-2 text-base font-extrabold shadow-card">
+            <span aria-hidden="true">🟢</span> Goal: <span className="text-success">GH₵50</span>
+          </span>
         </div>
+        <div className="p-5">
+          <h1 className="text-3xl font-extrabold leading-tight">
+            Learn Money Skills.
+            <br />
+            Make Your Own Choices!
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Practice real-life decisions with pocket money, savings goals and exciting school
+            challenges.
+          </p>
+        </div>
+      </Card>
+
+      <div className="mt-4 grid grid-cols-3 gap-3">
+        <StatCard label="Save Smart" value="GH₵10+" tone="primary" icon="🐖" />
+        <StatCard label="Wise Spend" value="Snacks" tone="warning" icon="🛍" />
+        <StatCard label="Badges" value="Stars" tone="success" icon="⭐" />
       </div>
-    </Screen>
+
+      <div className="mt-6 space-y-3">
+        <Button to="/onboarding" size="lg">
+          Start My Journey →
+        </Button>
+        <Button to="/login" variant="outline" size="lg">
+          Continue My Journey
+        </Button>
+        <Button to="/parent" variant="ghost">
+          Parent portal
+        </Button>
+      </div>
+
+      <p className="mt-6 text-center text-sm text-muted-foreground">
+        <span aria-hidden="true">🛡</span> Safe &amp; private. Designed for learners aged 8–12 with
+        Ghanaian schools.
+      </p>
+    </Page>
   );
 }

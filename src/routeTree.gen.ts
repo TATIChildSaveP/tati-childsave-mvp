@@ -12,7 +12,19 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ChildRouteRouteImport } from './routes/child/route'
+import { Route as LoginRouteImport } from './routes/login'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as ChildHomeRouteImport } from './routes/child/home'
+import { Route as ChildLearnRouteImport } from './routes/child/learn'
+import { Route as ChildProgressRouteImport } from './routes/child/progress'
+import { Route as ChildResultsRouteImport } from './routes/child/results'
+import { Route as ParentIndexRouteImport } from './routes/parent/index'
+import { Route as ChildLessonLessonIdRouteImport } from './routes/child/lesson.$lessonId'
+import { Route as ChildScenarioScenarioIdRouteImport } from './routes/child/scenario.$scenarioId'
+import { Route as ParentChildChildIdRouteImport } from './routes/parent/child.$childId'
 import { Route as AuthenticatedLearnChildIdIndexRouteImport } from './routes/_authenticated/learn.$childId.index'
 import { Route as AuthenticatedLearnChildIdSummaryRouteImport } from './routes/_authenticated/learn.$childId.summary'
 import { Route as AuthenticatedLearnChildIdAssessmentAssessmentIdRouteImport } from './routes/_authenticated/learn.$childId.assessment.$assessmentId'
@@ -33,10 +45,70 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChildRouteRoute = ChildRouteRouteImport.update({
+  id: '/child',
+  path: '/child',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SignupRoute = SignupRouteImport.update({
+  id: '/signup',
+  path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ChildHomeRoute = ChildHomeRouteImport.update({
+  id: '/home',
+  path: '/home',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ChildLearnRoute = ChildLearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ChildProgressRoute = ChildProgressRouteImport.update({
+  id: '/progress',
+  path: '/progress',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ChildResultsRoute = ChildResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ParentIndexRoute = ParentIndexRouteImport.update({
+  id: '/parent/',
+  path: '/parent/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChildLessonLessonIdRoute = ChildLessonLessonIdRouteImport.update({
+  id: '/lesson/$lessonId',
+  path: '/lesson/$lessonId',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ChildScenarioScenarioIdRoute = ChildScenarioScenarioIdRouteImport.update({
+  id: '/scenario/$scenarioId',
+  path: '/scenario/$scenarioId',
+  getParentRoute: () => ChildRouteRoute,
+} as any)
+const ParentChildChildIdRoute = ParentChildChildIdRouteImport.update({
+  id: '/parent/child/$childId',
+  path: '/parent/child/$childId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedLearnChildIdIndexRoute =
   AuthenticatedLearnChildIdIndexRouteImport.update({
@@ -71,8 +143,20 @@ const AuthenticatedLearnChildIdScenarioScenarioIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/child': typeof ChildRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/child/home': typeof ChildHomeRoute
+  '/child/learn': typeof ChildLearnRoute
+  '/child/progress': typeof ChildProgressRoute
+  '/child/results': typeof ChildResultsRoute
+  '/parent/': typeof ParentIndexRoute
+  '/child/lesson/$lessonId': typeof ChildLessonLessonIdRoute
+  '/child/scenario/$scenarioId': typeof ChildScenarioScenarioIdRoute
+  '/parent/child/$childId': typeof ParentChildChildIdRoute
   '/learn/$childId/summary': typeof AuthenticatedLearnChildIdSummaryRoute
   '/learn/$childId/': typeof AuthenticatedLearnChildIdIndexRoute
   '/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
@@ -81,8 +165,20 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/child': typeof ChildRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/child/home': typeof ChildHomeRoute
+  '/child/learn': typeof ChildLearnRoute
+  '/child/progress': typeof ChildProgressRoute
+  '/child/results': typeof ChildResultsRoute
+  '/parent': typeof ParentIndexRoute
+  '/child/lesson/$lessonId': typeof ChildLessonLessonIdRoute
+  '/child/scenario/$scenarioId': typeof ChildScenarioScenarioIdRoute
+  '/parent/child/$childId': typeof ParentChildChildIdRoute
   '/learn/$childId/summary': typeof AuthenticatedLearnChildIdSummaryRoute
   '/learn/$childId': typeof AuthenticatedLearnChildIdIndexRoute
   '/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
@@ -93,8 +189,20 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/child': typeof ChildRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/login': typeof LoginRoute
+  '/onboarding': typeof OnboardingRoute
+  '/signup': typeof SignupRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/child/home': typeof ChildHomeRoute
+  '/child/learn': typeof ChildLearnRoute
+  '/child/progress': typeof ChildProgressRoute
+  '/child/results': typeof ChildResultsRoute
+  '/parent/': typeof ParentIndexRoute
+  '/child/lesson/$lessonId': typeof ChildLessonLessonIdRoute
+  '/child/scenario/$scenarioId': typeof ChildScenarioScenarioIdRoute
+  '/parent/child/$childId': typeof ParentChildChildIdRoute
   '/_authenticated/learn/$childId/summary': typeof AuthenticatedLearnChildIdSummaryRoute
   '/_authenticated/learn/$childId/': typeof AuthenticatedLearnChildIdIndexRoute
   '/_authenticated/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
@@ -105,8 +213,20 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/child'
     | '/auth'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
     | '/dashboard'
+    | '/child/home'
+    | '/child/learn'
+    | '/child/progress'
+    | '/child/results'
+    | '/parent/'
+    | '/child/lesson/$lessonId'
+    | '/child/scenario/$scenarioId'
+    | '/parent/child/$childId'
     | '/learn/$childId/summary'
     | '/learn/$childId/'
     | '/learn/$childId/assessment/$assessmentId'
@@ -115,8 +235,20 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/child'
     | '/auth'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
     | '/dashboard'
+    | '/child/home'
+    | '/child/learn'
+    | '/child/progress'
+    | '/child/results'
+    | '/parent'
+    | '/child/lesson/$lessonId'
+    | '/child/scenario/$scenarioId'
+    | '/parent/child/$childId'
     | '/learn/$childId/summary'
     | '/learn/$childId'
     | '/learn/$childId/assessment/$assessmentId'
@@ -126,8 +258,20 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/child'
     | '/auth'
+    | '/login'
+    | '/onboarding'
+    | '/signup'
     | '/_authenticated/dashboard'
+    | '/child/home'
+    | '/child/learn'
+    | '/child/progress'
+    | '/child/results'
+    | '/parent/'
+    | '/child/lesson/$lessonId'
+    | '/child/scenario/$scenarioId'
+    | '/parent/child/$childId'
     | '/_authenticated/learn/$childId/summary'
     | '/_authenticated/learn/$childId/'
     | '/_authenticated/learn/$childId/assessment/$assessmentId'
@@ -138,7 +282,13 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  ChildRouteRoute: typeof ChildRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  LoginRoute: typeof LoginRoute
+  OnboardingRoute: typeof OnboardingRoute
+  SignupRoute: typeof SignupRoute
+  ParentIndexRoute: typeof ParentIndexRoute
+  ParentChildChildIdRoute: typeof ParentChildChildIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -164,12 +314,96 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/child': {
+      id: '/child'
+      path: '/child'
+      fullPath: '/child'
+      preLoaderRoute: typeof ChildRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/signup': {
+      id: '/signup'
+      path: '/signup'
+      fullPath: '/signup'
+      preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/child/home': {
+      id: '/child/home'
+      path: '/home'
+      fullPath: '/child/home'
+      preLoaderRoute: typeof ChildHomeRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/child/learn': {
+      id: '/child/learn'
+      path: '/learn'
+      fullPath: '/child/learn'
+      preLoaderRoute: typeof ChildLearnRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/child/progress': {
+      id: '/child/progress'
+      path: '/progress'
+      fullPath: '/child/progress'
+      preLoaderRoute: typeof ChildProgressRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/child/results': {
+      id: '/child/results'
+      path: '/results'
+      fullPath: '/child/results'
+      preLoaderRoute: typeof ChildResultsRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/parent/': {
+      id: '/parent/'
+      path: '/parent'
+      fullPath: '/parent/'
+      preLoaderRoute: typeof ParentIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/child/lesson/$lessonId': {
+      id: '/child/lesson/$lessonId'
+      path: '/lesson/$lessonId'
+      fullPath: '/child/lesson/$lessonId'
+      preLoaderRoute: typeof ChildLessonLessonIdRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/child/scenario/$scenarioId': {
+      id: '/child/scenario/$scenarioId'
+      path: '/scenario/$scenarioId'
+      fullPath: '/child/scenario/$scenarioId'
+      preLoaderRoute: typeof ChildScenarioScenarioIdRouteImport
+      parentRoute: typeof ChildRouteRoute
+    }
+    '/parent/child/$childId': {
+      id: '/parent/child/$childId'
+      path: '/parent/child/$childId'
+      fullPath: '/parent/child/$childId'
+      preLoaderRoute: typeof ParentChildChildIdRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/learn/$childId/': {
       id: '/_authenticated/learn/$childId/'
@@ -233,10 +467,38 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ChildRouteRouteChildren {
+  ChildHomeRoute: typeof ChildHomeRoute
+  ChildLearnRoute: typeof ChildLearnRoute
+  ChildProgressRoute: typeof ChildProgressRoute
+  ChildResultsRoute: typeof ChildResultsRoute
+  ChildLessonLessonIdRoute: typeof ChildLessonLessonIdRoute
+  ChildScenarioScenarioIdRoute: typeof ChildScenarioScenarioIdRoute
+}
+
+const ChildRouteRouteChildren: ChildRouteRouteChildren = {
+  ChildHomeRoute: ChildHomeRoute,
+  ChildLearnRoute: ChildLearnRoute,
+  ChildProgressRoute: ChildProgressRoute,
+  ChildResultsRoute: ChildResultsRoute,
+  ChildLessonLessonIdRoute: ChildLessonLessonIdRoute,
+  ChildScenarioScenarioIdRoute: ChildScenarioScenarioIdRoute,
+}
+
+const ChildRouteRouteWithChildren = ChildRouteRoute._addFileChildren(
+  ChildRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  ChildRouteRoute: ChildRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  LoginRoute: LoginRoute,
+  OnboardingRoute: OnboardingRoute,
+  SignupRoute: SignupRoute,
+  ParentIndexRoute: ParentIndexRoute,
+  ParentChildChildIdRoute: ParentChildChildIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
