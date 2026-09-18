@@ -122,79 +122,149 @@ function Dashboard() {
 
 function ChildCard({ childId, name, age }: { childId: string; name: string; age: number }) {
   const track = getTrack("save");
-  const { data: events } = useProgress(childId);
-  const done = track.sequence.filter((item) =>
-    events?.some((e) => e.item_type === item.kind && e.item_id === item.id),
-  ).length;
-  const insights = buildInsights(track, events ?? []);
+  const { data: events, isLoading, isError } = useProgress(childId);
+  const list = events ?? [];
+  const snapshot = journeySnapshot(track, list);
   const game = computeGamification(track, events);
   const growth = buildSkillGrowth(
-    findEvent(events, "assessment", "save-pre"),
-    findEvent(events, "assessment", "save-post"),
+    findEvent(list, "assessment", "save-pre"),
+    findEvent(list, "assessment", "save-post"),
   );
   const strong = strengths(growth, 3);
-  const growing = stillDeveloping(growth, 3);
+  const growing = stillDeveloping(growth, 2);
+  const starters = conversationStarters(name, track, list, growth);
+  const hasPost = !!findEvent(list, "assessment", "save-post");
+  const continuePath = snapshot.currentItem
+    ? itemPath(childId, snapshot.currentItem)
+    : `/learn/${childId}`;
 
   return (
     <Card>
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">{name}</h2>
-          <p className="text-sm text-muted-foreground">TATI Junior · age {age} · SAVE track</p>
+          <p className="text-sm text-muted-foreground">
+            TATI Junior · age {age} · SAVE journey: Term Ready Challenge
+          </p>
         </div>
-        <Link
-          to="/learn/$childId"
-          params={{ childId }}
-          className="flex min-h-[48px] items-center rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
-        >
-          Open
-        </Link>
+        <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-bold text-accent-foreground">
+          {snapshot.completionPct}% done
+        </span>
       </div>
+
+      {isLoading ? <p className="mt-4 text-sm text-muted-foreground">Loading progress…</p> : null}
+      {isError ? (
+        <p className="mt-4 rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+          We could not load progress just now. Please try again in a moment.
+        </p>
+      ) : null}
 
       <div className="mt-4">
         <ProgressBar
-          value={done}
+          value={snapshot.doneItems.length}
           max={track.sequence.length}
-          label={`${done} of ${track.sequence.length} steps finished`}
+          label={`${snapshot.doneItems.length} of ${track.sequence.length} stops finished`}
         />
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2 text-sm">
-        <span className="rounded-full bg-accent-soft px-3 py-1 font-semibold text-accent-foreground">
-          ⭐ Level {game.level} · {game.xp} XP
-        </span>
-        <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
-          🏅 {game.earnedBadges.length} badge{game.earnedBadges.length === 1 ? "" : "s"}
-        </span>
-        {game.streak.currentDays > 0 ? (
-          <span className="rounded-full bg-secondary px-3 py-1 font-semibold text-secondary-foreground">
-            🔥 {game.streak.currentDays}-day streak
-          </span>
-        ) : null}
+      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <div className="rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground">
+          <p className="font-bold">Lessons</p>
+          <p className="text-muted-foreground">
+            {snapshot.lessonsDone} of {snapshot.lessonsTotal} finished
+          </p>
+        </div>
+        <div className="rounded-2xl bg-secondary px-4 py-3 text-secondary-foreground">
+          <p className="font-bold">Money story</p>
+          <p className="text-muted-foreground">
+            {snapshot.scenarioDone} of {snapshot.scenarioTotal} chapters
+          </p>
+        </div>
       </div>
 
-      {strong.length > 0 ? (
-        <div className="mt-4 rounded-2xl bg-secondary/60 p-4">
-          <p className="text-sm font-bold">Strongest skills</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {strong.map((s) => s.label).join(", ")}
-            {growth.some((g) => g.grew) ? " — several grew since the first check-in." : "."}
-          </p>
-          {growing.length > 0 ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              Still developing: {growing.map((s) => s.label).join(", ")}.
-            </p>
-          ) : null}
+      <p className="mt-3 text-sm text-muted-foreground">{snapshot.scenarioStatus}</p>
+
+      {snapshot.currentItem ? (
+        <p className="mt-2 text-sm">
+          <span className="font-bold">Up next:</span> {itemTitle(track, snapshot.currentItem)}
+        </p>
+      ) : (
+        <p className="mt-2 text-sm font-bold">The whole SAVE journey is complete. 🎉</p>
+      )}
+
+      {snapshot.recentTitles.length > 0 || game.earnedBadges.length > 0 ? (
+        <div className="mt-4 rounded-2xl bg-accent-soft p-4">
+          <p className="text-sm font-bold text-accent-foreground">Recent achievements</p>
+          <ul className="mt-2 space-y-1 text-sm text-accent-foreground/90">
+            {game.earnedBadges.slice(-2).map((b) => (
+              <li key={b.definition.id}>
+                {b.definition.icon} {b.definition.name} — {b.definition.blurb}
+              </li>
+            ))}
+            {snapshot.recentTitles.map((t) => (
+              <li key={t}>✅ {t}</li>
+            ))}
+          </ul>
         </div>
       ) : null}
 
-      <ul className="mt-4 space-y-2">
-        {insights.map((insight) => (
-          <li key={insight} className="rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
-            {insight}
-          </li>
-        ))}
-      </ul>
+      <div className="mt-4">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">
+          Skills developing
+        </h3>
+        {growth.length === 0 ? (
+          <p className="mt-2 text-sm text-muted-foreground">
+            Skills appear here after {name} finishes the first money check-in.
+          </p>
+        ) : (
+          <>
+            <ul className="mt-2 space-y-2">
+              {strong.map((s) => (
+                <li key={s.competency} className="rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                  {skillSentence(name, s)}
+                </li>
+              ))}
+            </ul>
+            {growing.length > 0 ? (
+              <p className="mt-2 text-sm text-muted-foreground">
+                Still growing: {growing.map((s) => s.label.toLowerCase()).join(" and ")}.
+              </p>
+            ) : null}
+            <p className="mt-2 text-sm text-muted-foreground">
+              {hasPost
+                ? "Comparing the first and final check-ins shows where thinking changed."
+                : "The final check-in at the end of the journey will show how this has changed."}
+            </p>
+          </>
+        )}
+      </div>
+
+      <div className="mt-4 rounded-2xl border-2 border-dashed border-border p-4">
+        <h3 className="text-sm font-bold uppercase tracking-wide text-primary">Talk about it at home</h3>
+        <ul className="mt-2 space-y-2">
+          {starters.map((s) => (
+            <li key={s} className="text-sm">
+              💬 {s}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Link
+          to={continuePath}
+          className="flex min-h-[48px] flex-1 items-center justify-center rounded-2xl bg-primary px-4 text-sm font-semibold text-primary-foreground"
+        >
+          Continue learning →
+        </Link>
+        <Link
+          to="/learn/$childId/summary"
+          params={{ childId }}
+          className="flex min-h-[48px] items-center justify-center rounded-2xl bg-secondary px-4 text-sm font-semibold text-secondary-foreground"
+        >
+          Full summary
+        </Link>
+      </div>
     </Card>
   );
 }
