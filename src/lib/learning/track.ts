@@ -1,6 +1,6 @@
 import { saveTrack } from "@/content/tracks/save";
 import { getLessonById } from "@/lib/lessons/registry";
-import type { Assessment, Lesson, Scenario, Track, TrackItem } from "./types";
+import type { Assessment, Lesson, ReflectionPrompt, Scenario, Track, TrackItem } from "./types";
 
 const TRACKS: Record<string, Track> = { [saveTrack.id]: saveTrack };
 
@@ -22,10 +22,16 @@ export function getAssessment(track: Track, id: string): Assessment | undefined 
   return track.assessments.find((a) => a.id === id);
 }
 
+export function getReflection(track: Track, id: string): ReflectionPrompt | undefined {
+  return track.reflections?.find((r) => r.id === id);
+}
+
 export function itemTitle(track: Track, item: TrackItem): string {
   if (item.kind === "lesson")
     return getLessonById(item.id)?.title ?? getLesson(track, item.id)?.title ?? item.id;
-  if (item.kind === "scenario") return getScenario(track, item.id)?.title ?? item.id;
+  if (item.kind === "reflection") return getReflection(track, item.id)?.title ?? item.id;
+  if (item.kind === "scenario")
+    return item.chapterTitle ?? getScenario(track, item.id)?.title ?? item.id;
   return getAssessment(track, item.id)?.title ?? item.id;
 }
 
@@ -36,7 +42,8 @@ export function itemSubtitle(track: Track, item: TrackItem): string {
     const xp = engineLesson ? ` · +${engineLesson.xpReward} pts` : "";
     return `Lesson · ${minutes} min${xp}`;
   }
-  if (item.kind === "scenario") return "Decision story";
+  if (item.kind === "reflection") return "Pause and think · 1 min";
+  if (item.kind === "scenario") return item.chip ?? "Decision story";
   return getAssessment(track, item.id)?.phase === "pre" ? "Starting check-in" : "Final check-in";
 }
 
@@ -44,6 +51,7 @@ export function itemSubtitle(track: Track, item: TrackItem): string {
 export function itemPath(childId: string, item: TrackItem): string {
   const base = `/learn/${childId}`;
   if (item.kind === "lesson") return `${base}/lesson/${item.id}`;
+  if (item.kind === "reflection") return `${base}/reflection/${item.id}`;
   if (item.kind === "scenario") return `${base}/scenario/${item.id}`;
   return `${base}/assessment/${item.id}`;
 }

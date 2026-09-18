@@ -11,13 +11,34 @@ interface Props {
   childId: string;
   onComplete: (payload: { available: number; saved: number; decisions: unknown[] }) => void;
   saving?: boolean | undefined;
+  /** Story nodes that start the NEXT chapter — the chapter pauses before them. */
+  pauseBefore?: string[] | undefined;
+  /** Name of the chapter being played, shown on the pause card. */
+  chapterTitle?: string | undefined;
+  /** What the learner does next after this chapter (e.g. a lesson title). */
+  nextUpLabel?: string | undefined;
+  onChapterPause?: (payload: { available: number; saved: number; decisions: unknown[] }) => void;
 }
 
 /** Renders any scenario from the engine. Holds no story logic of its own. */
-export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props) {
+export function ScenarioPlayer({
+  scenario,
+  childId,
+  onComplete,
+  saving,
+  pauseBefore,
+  chapterTitle,
+  nextUpLabel,
+  onChapterPause,
+}: Props) {
   const runner = useScenarioRunner(scenario, childId);
   const { state, node, summary, status } = runner;
   const dayPct = dayProgressPercent(scenario, state);
+  const atChapterEnd =
+    !!pauseBefore?.length &&
+    state.phase === "decision" &&
+    state.decisions.length > 0 &&
+    pauseBefore.includes(state.nodeId);
 
   if (status === "loading") {
     return (
@@ -110,7 +131,37 @@ export function ScenarioPlayer({ scenario, childId, onComplete, saving }: Props)
         </section>
       ) : null}
 
-      {state.phase === "decision" && node ? (
+      {atChapterEnd ? (
+        <section className="mt-4 space-y-3">
+          <div className="rounded-3xl border border-border bg-card p-5 shadow-sm">
+            <p className="text-sm font-bold uppercase tracking-wide text-primary">Chapter complete</p>
+            <h2 className="mt-1 text-xl font-bold">{chapterTitle ?? "Your story pauses here"}</h2>
+            <p className="mt-2 text-muted-foreground">
+              Day {state.day} of {scenario.totalDays}. Your story is saved exactly here — the next part of the
+              adventure is waiting on your journey map.
+            </p>
+            {nextUpLabel ? (
+              <p className="mt-3 rounded-2xl bg-secondary px-4 py-3 text-sm text-secondary-foreground">
+                Next up: <span className="font-bold">{nextUpLabel}</span>
+              </p>
+            ) : null}
+          </div>
+          <PrimaryButton
+            onClick={() =>
+              onChapterPause?.({
+                available: state.available,
+                saved: state.saved,
+                decisions: state.decisions,
+              })
+            }
+            disabled={!!saving}
+          >
+            {saving ? "Saving…" : "Back to my journey →"}
+          </PrimaryButton>
+        </section>
+      ) : null}
+
+      {!atChapterEnd && state.phase === "decision" && node ? (
         <section className="mt-4">
           {node.image ? (
             <figure className="relative mb-4 overflow-hidden rounded-3xl border border-border">

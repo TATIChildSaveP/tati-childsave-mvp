@@ -4,7 +4,7 @@ import { Screen, Card, TopBar, PrimaryButton, ChoiceButton, GhanaCedi } from "@/
 import { ScenarioPlayer } from "@/components/scenario/ScenarioPlayer";
 import { useRecordProgress } from "@/lib/learning/progress";
 import { getScenarioDefinition } from "@/lib/scenario/registry";
-import { getScenario, getTrack } from "@/lib/learning/track";
+import { getScenario, getTrack, itemTitle } from "@/lib/learning/track";
 import type { ScenarioChoice } from "@/lib/learning/types";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/scenario/$scenarioId")({
@@ -31,9 +31,13 @@ interface HistoryEntry {
 
 function ScenarioPage() {
   const { childId, scenarioId } = useParams({ from: "/_authenticated/learn/$childId/scenario/$scenarioId" });
-  const branching = getScenarioDefinition(scenarioId);
   const track = getTrack("save");
-  const scenario = getScenario(track, scenarioId);
+  const chapterItem = track.sequence.find((i) => i.kind === "scenario" && i.id === scenarioId);
+  const baseScenarioId = chapterItem?.scenarioId ?? scenarioId.split("--")[0]!;
+  const branching = getScenarioDefinition(baseScenarioId);
+  const chapterIndex = track.sequence.findIndex((i) => i.kind === "scenario" && i.id === scenarioId);
+  const nextUp = chapterIndex >= 0 ? track.sequence[chapterIndex + 1] : undefined;
+  const scenario = getScenario(track, baseScenarioId);
   const navigate = useNavigate();
   const record = useRecordProgress();
 
@@ -50,11 +54,23 @@ function ScenarioPage() {
         scenario={branching}
         childId={childId}
         saving={record.isPending}
+        pauseBefore={chapterItem?.pauseBefore}
+        chapterTitle={chapterItem?.chapterTitle}
+        nextUpLabel={nextUp ? itemTitle(track, nextUp) : undefined}
+        onChapterPause={async ({ available, saved, decisions }) => {
+          await record.mutateAsync({
+            childId,
+            itemType: "scenario",
+            itemId: scenarioId,
+            details: { available, saved, decisions, chapter: true },
+          });
+          navigate({ to: "/learn/$childId", params: { childId } });
+        }}
         onComplete={async ({ available, saved, decisions }) => {
           await record.mutateAsync({
             childId,
             itemType: "scenario",
-            itemId: branching.id,
+            itemId: scenarioId,
             details: { available, saved, decisions },
           });
           navigate({ to: "/learn/$childId", params: { childId } });

@@ -30,6 +30,7 @@ import { Route as AuthenticatedLearnChildIdIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedLearnChildIdSummaryRouteImport } from './routes/_authenticated/learn.$childId.summary'
 import { Route as AuthenticatedLearnChildIdAssessmentAssessmentIdRouteImport } from './routes/_authenticated/learn.$childId.assessment.$assessmentId'
 import { Route as AuthenticatedLearnChildIdLessonLessonIdRouteImport } from './routes/_authenticated/learn.$childId.lesson.$lessonId'
+import { Route as AuthenticatedLearnChildIdReflectionReflectionIdRouteImport } from './routes/_authenticated/learn.$childId.reflection.$reflectionId'
 import { Route as AuthenticatedLearnChildIdScenarioScenarioIdRouteImport } from './routes/_authenticated/learn.$childId.scenario.$scenarioId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -140,6 +141,12 @@ const AuthenticatedLearnChildIdLessonLessonIdRoute =
     path: '/learn/$childId/lesson/$lessonId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedLearnChildIdReflectionReflectionIdRoute =
+  AuthenticatedLearnChildIdReflectionReflectionIdRouteImport.update({
+    id: '/learn/$childId/reflection/$reflectionId',
+    path: '/learn/$childId/reflection/$reflectionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedLearnChildIdScenarioScenarioIdRoute =
   AuthenticatedLearnChildIdScenarioScenarioIdRouteImport.update({
     id: '/learn/$childId/scenario/$scenarioId',
@@ -168,6 +175,7 @@ export interface FileRoutesByFullPath {
   '/learn/$childId/': typeof AuthenticatedLearnChildIdIndexRoute
   '/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
   '/learn/$childId/lesson/$lessonId': typeof AuthenticatedLearnChildIdLessonLessonIdRoute
+  '/learn/$childId/reflection/$reflectionId': typeof AuthenticatedLearnChildIdReflectionReflectionIdRoute
   '/learn/$childId/scenario/$scenarioId': typeof AuthenticatedLearnChildIdScenarioScenarioIdRoute
 }
 export interface FileRoutesByTo {
@@ -190,6 +198,7 @@ export interface FileRoutesByTo {
   '/learn/$childId': typeof AuthenticatedLearnChildIdIndexRoute
   '/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
   '/learn/$childId/lesson/$lessonId': typeof AuthenticatedLearnChildIdLessonLessonIdRoute
+  '/learn/$childId/reflection/$reflectionId': typeof AuthenticatedLearnChildIdReflectionReflectionIdRoute
   '/learn/$childId/scenario/$scenarioId': typeof AuthenticatedLearnChildIdScenarioScenarioIdRoute
 }
 export interface FileRoutesById {
@@ -215,6 +224,7 @@ export interface FileRoutesById {
   '/_authenticated/learn/$childId/': typeof AuthenticatedLearnChildIdIndexRoute
   '/_authenticated/learn/$childId/assessment/$assessmentId': typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
   '/_authenticated/learn/$childId/lesson/$lessonId': typeof AuthenticatedLearnChildIdLessonLessonIdRoute
+  '/_authenticated/learn/$childId/reflection/$reflectionId': typeof AuthenticatedLearnChildIdReflectionReflectionIdRoute
   '/_authenticated/learn/$childId/scenario/$scenarioId': typeof AuthenticatedLearnChildIdScenarioScenarioIdRoute
 }
 export interface FileRouteTypes {
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/learn/$childId/'
     | '/learn/$childId/assessment/$assessmentId'
     | '/learn/$childId/lesson/$lessonId'
+    | '/learn/$childId/reflection/$reflectionId'
     | '/learn/$childId/scenario/$scenarioId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -262,6 +273,7 @@ export interface FileRouteTypes {
     | '/learn/$childId'
     | '/learn/$childId/assessment/$assessmentId'
     | '/learn/$childId/lesson/$lessonId'
+    | '/learn/$childId/reflection/$reflectionId'
     | '/learn/$childId/scenario/$scenarioId'
   id:
     | '__root__'
@@ -286,6 +298,7 @@ export interface FileRouteTypes {
     | '/_authenticated/learn/$childId/'
     | '/_authenticated/learn/$childId/assessment/$assessmentId'
     | '/_authenticated/learn/$childId/lesson/$lessonId'
+    | '/_authenticated/learn/$childId/reflection/$reflectionId'
     | '/_authenticated/learn/$childId/scenario/$scenarioId'
   fileRoutesById: FileRoutesById
 }
@@ -449,6 +462,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLearnChildIdLessonLessonIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/learn/$childId/reflection/$reflectionId': {
+      id: '/_authenticated/learn/$childId/reflection/$reflectionId'
+      path: '/learn/$childId/reflection/$reflectionId'
+      fullPath: '/learn/$childId/reflection/$reflectionId'
+      preLoaderRoute: typeof AuthenticatedLearnChildIdReflectionReflectionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/learn/$childId/scenario/$scenarioId': {
       id: '/_authenticated/learn/$childId/scenario/$scenarioId'
       path: '/learn/$childId/scenario/$scenarioId'
@@ -465,6 +485,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedLearnChildIdIndexRoute: typeof AuthenticatedLearnChildIdIndexRoute
   AuthenticatedLearnChildIdAssessmentAssessmentIdRoute: typeof AuthenticatedLearnChildIdAssessmentAssessmentIdRoute
   AuthenticatedLearnChildIdLessonLessonIdRoute: typeof AuthenticatedLearnChildIdLessonLessonIdRoute
+  AuthenticatedLearnChildIdReflectionReflectionIdRoute: typeof AuthenticatedLearnChildIdReflectionReflectionIdRoute
   AuthenticatedLearnChildIdScenarioScenarioIdRoute: typeof AuthenticatedLearnChildIdScenarioScenarioIdRoute
 }
 
@@ -476,6 +497,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedLearnChildIdAssessmentAssessmentIdRoute,
   AuthenticatedLearnChildIdLessonLessonIdRoute:
     AuthenticatedLearnChildIdLessonLessonIdRoute,
+  AuthenticatedLearnChildIdReflectionReflectionIdRoute:
+    AuthenticatedLearnChildIdReflectionReflectionIdRoute,
   AuthenticatedLearnChildIdScenarioScenarioIdRoute:
     AuthenticatedLearnChildIdScenarioScenarioIdRoute,
 }
