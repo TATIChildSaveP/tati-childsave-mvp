@@ -1,12 +1,12 @@
 import { Fragment } from "react";
 import { createFileRoute, Link, useNavigate, useParams } from "@tanstack/react-router";
-import { useGamification } from "@/lib/gamification/useGamification";
 import { XPCard } from "@/components/gamification/XPCard";
 import { BadgeGrid } from "@/components/gamification/BadgeGrid";
 import { CelebrationOverlay } from "@/components/gamification/CelebrationOverlay";
 import { useBadgeCelebrations } from "@/components/gamification/useBadgeCelebrations";
 import { Screen } from "@/components/learning/primitives";
-import { useChild, useProgress, isDone } from "@/lib/learning/progress";
+import { useChild } from "@/lib/learning/progress";
+import { useChildProgress } from "@/lib/progress/service";
 import { getTrack, itemPath, itemSubtitle, itemTitle } from "@/lib/learning/track";
 import type { TrackItem } from "@/lib/learning/types";
 import { cn } from "@/lib/utils";
@@ -38,30 +38,27 @@ function Journey() {
   const { childId } = useParams({ from: "/_authenticated/learn/$childId/" });
   const track = getTrack("save");
   const { child } = useChild(childId);
-  const { data: events, isLoading, isError } = useProgress(childId);
+  const progress = useChildProgress(childId);
+  const { isLoading, isError } = progress;
   const navigate = useNavigate();
-  const game = useGamification(childId);
+  const game = progress.game;
   const { showJourneyCelebration, dismissJourneyCelebration } = useBadgeCelebrations(
     childId,
     game.badges,
     game.journeyComplete,
   );
 
-  const steps = track.sequence.map((item, index) => ({
-    item,
-    index,
-    done: isDone(events, item.kind, item.id),
-  }));
+  const steps = progress.steps;
   const doneCount = steps.filter((s) => s.done).length;
   const currentIndex = steps.findIndex((s) => !s.done);
   const allDone = currentIndex === -1;
 
   const goal = track.goal;
   const target = goal?.target ?? 80;
-  const saved = steps.reduce((sum, s) => sum + (s.done ? (s.item.reward ?? 0) : 0), 0);
-  const savedPct = Math.min(100, Math.round((saved / target) * 100));
-  const dayNumber = Math.min(goal?.daysTotal ?? 14, doneCount + 1);
-  const daysToGo = Math.max(0, (goal?.daysTotal ?? 14) - doneCount);
+  const saved = progress.journey.savedCedis;
+  const savedPct = progress.journey.savedPct;
+  const dayNumber = progress.journey.dayNumber;
+  const daysToGo = progress.journey.daysToGo;
 
   const currentStep = allDone ? undefined : steps[currentIndex];
 

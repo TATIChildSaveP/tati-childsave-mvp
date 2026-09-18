@@ -3,7 +3,8 @@ import { AssessmentRunner } from "@/components/assessment/AssessmentRunner";
 import { Screen, TopBar } from "@/components/learning/primitives";
 import { getAssessmentDefinition } from "@/lib/assessment/registry";
 import type { AssessmentResult } from "@/lib/assessment/types";
-import { useChild, useRecordProgress } from "@/lib/learning/progress";
+import { useChild } from "@/lib/learning/progress";
+import { useRecordProgress } from "@/lib/progress/service";
 import { celebrateStep } from "@/components/gamification/celebrate";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/assessment/$assessmentId")({

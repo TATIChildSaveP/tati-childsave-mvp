@@ -13,9 +13,8 @@ import {
   ErrorState,
 } from "@/components/tati";
 import { useChildProfile } from "@/lib/family";
-import { useProgress, isDone } from "@/lib/learning/progress";
+import { useChildProgress } from "@/lib/progress/service";
 import { getTrack } from "@/lib/learning/track";
-import { buildInsights } from "@/lib/learning/insights";
 
 export const Route = createFileRoute("/parent/child/$childId")({
   head: () => ({
@@ -37,8 +36,9 @@ export const Route = createFileRoute("/parent/child/$childId")({
 function ParentChild() {
   const { childId } = Route.useParams();
   const { child, isLoading, isError, refetch } = useChildProfile(childId);
-  const { data: events } = useProgress(childId);
-  const track = getTrack("save");
+  const progress = useChildProgress(childId);
+  const { track } = progress;
+  const doneLesson = (id: string) => progress.steps.some((s) => s.done && s.item.kind === "lesson" && s.item.id === id);
 
   if (isLoading) {
     return (
@@ -71,8 +71,8 @@ function ParentChild() {
     );
   }
 
-  const done = (events ?? []).length;
-  const insights = buildInsights(track, events ?? []);
+  const done = progress.events.length;
+  const insights = progress.insights;
 
   return (
     <Page>
@@ -118,7 +118,7 @@ function ParentChild() {
             title={lesson.title}
             subtitle={`Lesson · ${lesson.minutes ?? 5} min`}
             minutes={lesson.minutes ?? 5}
-            status={isDone(events, "lesson", lesson.id) ? "done" : "ready"}
+            status={doneLesson(lesson.id) ? "done" : "ready"}
           />
         ))}
       </Card>
