@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ChildRouteRouteImport } from './routes/child/route'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ParentRouteRouteImport } from './routes/parent/route'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as ChildHomeRouteImport } from './routes/child/home'
@@ -60,6 +61,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
   path: '/onboarding',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ParentRouteRoute = ParentRouteRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
@@ -91,9 +97,9 @@ const ChildResultsRoute = ChildResultsRouteImport.update({
   getParentRoute: () => ChildRouteRoute,
 } as any)
 const ParentIndexRoute = ParentIndexRouteImport.update({
-  id: '/parent/',
-  path: '/parent/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => ParentRouteRoute,
 } as any)
 const ChildLessonLessonIdRoute = ChildLessonLessonIdRouteImport.update({
   id: '/lesson/$lessonId',
@@ -106,9 +112,9 @@ const ChildScenarioScenarioIdRoute = ChildScenarioScenarioIdRouteImport.update({
   getParentRoute: () => ChildRouteRoute,
 } as any)
 const ParentChildChildIdRoute = ParentChildChildIdRouteImport.update({
-  id: '/parent/child/$childId',
-  path: '/parent/child/$childId',
-  getParentRoute: () => rootRouteImport,
+  id: '/child/$childId',
+  path: '/child/$childId',
+  getParentRoute: () => ParentRouteRoute,
 } as any)
 const AuthenticatedLearnChildIdIndexRoute =
   AuthenticatedLearnChildIdIndexRouteImport.update({
@@ -144,6 +150,7 @@ const AuthenticatedLearnChildIdScenarioScenarioIdRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/child': typeof ChildRouteRouteWithChildren
+  '/parent': typeof ParentRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -190,6 +197,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/child': typeof ChildRouteRouteWithChildren
+  '/parent': typeof ParentRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -214,6 +222,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/child'
+    | '/parent'
     | '/auth'
     | '/login'
     | '/onboarding'
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/child'
+    | '/parent'
     | '/auth'
     | '/login'
     | '/onboarding'
@@ -283,12 +293,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   ChildRouteRoute: typeof ChildRouteRouteWithChildren
+  ParentRouteRoute: typeof ParentRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   SignupRoute: typeof SignupRoute
-  ParentIndexRoute: typeof ParentIndexRoute
-  ParentChildChildIdRoute: typeof ParentChildChildIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -335,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OnboardingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/parent': {
+      id: '/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof ParentRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/signup': {
       id: '/signup'
       path: '/signup'
@@ -379,10 +395,10 @@ declare module '@tanstack/react-router' {
     }
     '/parent/': {
       id: '/parent/'
-      path: '/parent'
+      path: '/'
       fullPath: '/parent/'
       preLoaderRoute: typeof ParentIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ParentRouteRoute
     }
     '/child/lesson/$lessonId': {
       id: '/child/lesson/$lessonId'
@@ -400,10 +416,10 @@ declare module '@tanstack/react-router' {
     }
     '/parent/child/$childId': {
       id: '/parent/child/$childId'
-      path: '/parent/child/$childId'
+      path: '/child/$childId'
       fullPath: '/parent/child/$childId'
       preLoaderRoute: typeof ParentChildChildIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof ParentRouteRoute
     }
     '/_authenticated/learn/$childId/': {
       id: '/_authenticated/learn/$childId/'
@@ -489,16 +505,29 @@ const ChildRouteRouteWithChildren = ChildRouteRoute._addFileChildren(
   ChildRouteRouteChildren,
 )
 
+interface ParentRouteRouteChildren {
+  ParentIndexRoute: typeof ParentIndexRoute
+  ParentChildChildIdRoute: typeof ParentChildChildIdRoute
+}
+
+const ParentRouteRouteChildren: ParentRouteRouteChildren = {
+  ParentIndexRoute: ParentIndexRoute,
+  ParentChildChildIdRoute: ParentChildChildIdRoute,
+}
+
+const ParentRouteRouteWithChildren = ParentRouteRoute._addFileChildren(
+  ParentRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   ChildRouteRoute: ChildRouteRouteWithChildren,
+  ParentRouteRoute: ParentRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   SignupRoute: SignupRoute,
-  ParentIndexRoute: ParentIndexRoute,
-  ParentChildChildIdRoute: ParentChildChildIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
