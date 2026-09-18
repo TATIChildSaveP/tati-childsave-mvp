@@ -4,6 +4,7 @@ import { Screen, TopBar } from "@/components/learning/primitives";
 import { getAssessmentDefinition } from "@/lib/assessment/registry";
 import type { AssessmentResult } from "@/lib/assessment/types";
 import { useChild, useRecordProgress } from "@/lib/learning/progress";
+import { celebrateStep } from "@/components/gamification/celebrate";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/assessment/$assessmentId")({
   head: () => ({
@@ -49,6 +50,11 @@ function AssessmentPage() {
         competencies: result.competencies,
       },
     });
+    celebrateStep("assessment");
+    if (result.assessmentType === "post") {
+      navigate({ to: "/learn/$childId/summary", params: { childId } });
+      return;
+    }
     navigate({ to: "/learn/$childId", params: { childId } });
   }
 
