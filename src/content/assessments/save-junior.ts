@@ -1,4 +1,7 @@
 import type { AssessmentDefinition } from "@/lib/assessment/types";
+import welcomeScene from "@/assets/checkin-20.png.asset.json";
+import snackScene from "@/assets/checkin-21.png.asset.json";
+import celebrationScene from "@/assets/checkin-22.png.asset.json";
 
 // TATI Junior (ages 8–12), Ghana. Scenario-style questions, never exam language.
 // Pure data — no UI, no database access.
@@ -8,10 +11,23 @@ export const savePreAssessment: AssessmentDefinition = {
   trackId: "save",
   assessmentType: "pre",
   title: "Before we begin",
+  shortTitle: "Money Check-In",
+  introHeadline: "Let's see how you think about money! 🧠",
   intro:
-    "A few quick money stories. There is no pass or fail — just tell us what you would really do.",
+    "There are no grades or scores here! Just choose what you think you would do in everyday life.",
+  introImageUrl: welcomeScene.url,
+  introImageBadge: "Meet Kwesi",
+  introTopics: [
+    { icon: "🍎", label: "Buying snacks" },
+    { icon: "💰", label: "Saving cedis" },
+    { icon: "🤝", label: "Sharing" },
+  ],
+  estimatedMinutes: 5,
+  startingWallet: 10,
   outro:
-    "Thanks for sharing! Now we know where to start. Let's go and explore your money journey.",
+    "We've learned a little about how you think about everyday money choices. Now your TATI adventure begins!",
+  outroImageUrl: celebrationScene.url,
+  outroImageBadge: "Profile Unlocked",
   showScoreToChild: false,
   questions: [
     {
@@ -19,12 +35,31 @@ export const savePreAssessment: AssessmentDefinition = {
       assessmentType: "pre",
       competency: "spending-decisions",
       illustration: "🧺",
+      topic: "Saturday Treat",
+      imageUrl: snackScene.url,
+      imageBadge: "GH₵10 Gift",
+      hint: "There are no wrong answers — pick the plan that suits you best!",
       question: "Auntie Akosua gives you GH₵10 on Saturday. What do you do first?",
       options: [
-        { id: "a", label: "Spend it all at the food stall", icon: "🍢" },
-        { id: "b", label: "Keep some of it and spend the rest", icon: "🪙" },
-        { id: "c", label: "Keep all of it for something bigger", icon: "🎯" },
-        { id: "d", label: "Give it to a friend to hold", icon: "🤝" },
+        {
+          id: "a",
+          label: "Spend it all at the food stall",
+          description: "Enjoy the moment with friends today.",
+          icon: "🍢",
+        },
+        {
+          id: "b",
+          label: "Keep some of it and spend the rest",
+          description: "Treat myself a little and still grow my savings.",
+          icon: "🪙",
+        },
+        {
+          id: "c",
+          label: "Keep all of it for something bigger",
+          description: "Put every cedi away for a special goal.",
+          icon: "🎯",
+        },
+        { id: "d", label: "Give it to a friend to hold", description: "Ask someone else to keep it safe.", icon: "🤝" },
       ],
       idealOptionId: "b",
       feedback:

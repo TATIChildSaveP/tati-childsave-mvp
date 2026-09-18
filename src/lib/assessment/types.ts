@@ -34,6 +34,8 @@ export const COMPETENCY_LABELS: Record<Competency, string> = {
 export interface AnswerOption {
   id: string;
   label: string;
+  /** Short plain-language explanation shown under the option label. */
+  description?: string;
   /** Optional friendly icon shown beside the option. */
   icon?: string;
   /** Points for choosing this option; defaults come from scoring rules. */
@@ -58,6 +60,14 @@ export interface AssessmentQuestion {
   question: string;
   /** Optional decorative illustration (emoji or image URL). */
   illustration?: string;
+  /** Wide scene picture shown above the story. */
+  imageUrl?: string;
+  /** Small caption chip shown on the scene picture, e.g. "GH₵20 Gift". */
+  imageBadge?: string;
+  /** Short topic name shown in the progress chip, e.g. "Snack Temptation". */
+  topic?: string;
+  /** Gentle nudge shown under the story. */
+  hint?: string;
   options: AnswerOption[];
   /** The strongest money habit, where one exists. Never framed as right/wrong to the child. */
   idealOptionId?: string;
@@ -75,6 +85,22 @@ export interface AssessmentDefinition {
   /** Closing message. Pre-assessments must not show a score to the child. */
   outro: string;
   showScoreToChild: boolean;
+  /** Short label for the screen header, e.g. "Money Check-In". */
+  shortTitle?: string;
+  /** Headline on the welcome screen. */
+  introHeadline?: string;
+  /** Welcome scene picture and its caption chip. */
+  introImageUrl?: string;
+  introImageBadge?: string;
+  /** Small topic chips shown on the welcome screen. */
+  introTopics?: { icon: string; label: string }[];
+  /** Estimated minutes, shown on the welcome screen. */
+  estimatedMinutes?: number;
+  /** Practice wallet shown on the welcome screen, in cedis. */
+  startingWallet?: number;
+  /** Celebration scene picture and its caption chip. */
+  outroImageUrl?: string;
+  outroImageBadge?: string;
   questions: AssessmentQuestion[];
 }
 

@@ -3,7 +3,7 @@ import { AssessmentRunner } from "@/components/assessment/AssessmentRunner";
 import { Screen, TopBar } from "@/components/learning/primitives";
 import { getAssessmentDefinition } from "@/lib/assessment/registry";
 import type { AssessmentResult } from "@/lib/assessment/types";
-import { useRecordProgress } from "@/lib/learning/progress";
+import { useChild, useRecordProgress } from "@/lib/learning/progress";
 
 export const Route = createFileRoute("/_authenticated/learn/$childId/assessment/$assessmentId")({
   head: () => ({
@@ -26,6 +26,7 @@ function AssessmentPage() {
   const definition = getAssessmentDefinition(assessmentId);
   const navigate = useNavigate();
   const record = useRecordProgress();
+  const child = useChild(childId);
 
   if (!definition) {
     return (
@@ -57,6 +58,7 @@ function AssessmentPage() {
       backTo={`/learn/${childId}`}
       saving={record.isPending}
       onComplete={finish}
+      {...(child.child?.name ? { childName: child.child.name } : {})}
     />
   );
 }
