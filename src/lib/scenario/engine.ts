@@ -48,7 +48,9 @@ export function applyChoice(
   if (!node || !choice) return state;
 
   const effect = choice.effect ?? {};
-  const transfer = effect.transferToSaved ?? 0;
+  const transfer = effect.transferAllToSaved
+    ? Math.max(0, state.available)
+    : (effect.transferToSaved ?? 0);
   const available = state.available + (effect.available ?? 0) - transfer;
   const saved = state.saved + (effect.saved ?? 0) + transfer;
 

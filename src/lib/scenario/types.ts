@@ -63,6 +63,8 @@ export interface ScenarioEffect {
   saved?: number;
   /** Move money from pocket into the savings box. */
   transferToSaved?: number;
+  /** Move everything left in the pocket into the savings box. */
+  transferAllToSaved?: boolean;
   /** Extra days this choice takes (default 1). */
   advanceDays?: number;
   competencies?: Partial<Record<Competency, number>>;
