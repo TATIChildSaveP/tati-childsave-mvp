@@ -26,6 +26,7 @@ function AssessmentPage() {
   const definition = getAssessmentDefinition(assessmentId);
   const navigate = useNavigate();
   const record = useRecordProgress();
+  const child = useChild(childId);
 
   if (!definition) {
     return (
