@@ -73,7 +73,19 @@ export interface Scenario {
   closingReflection: string;
 }
 
-export type TrackItemKind = "assessment" | "lesson" | "scenario";
+export type TrackItemKind = "assessment" | "lesson" | "scenario" | "reflection";
+
+/** A short pause-and-think stop between story chapters. No right answers. */
+export interface ReflectionPrompt {
+  id: string;
+  title: string;
+  /** Why we are pausing here, in one child-friendly line. */
+  intro: string;
+  question: string;
+  options: { id: string; label: string; response: string }[];
+  closing: string;
+  icon?: string;
+}
 
 /**
  * One stop on the adventure trail. Presentation copy lives in the data so the
@@ -92,6 +104,14 @@ export interface TrackItem {
   icon?: string;
   /** Cedis added to the goal jar when this step is cleared. */
   reward?: number;
+  /** Title shown for a scenario chapter stop. */
+  chapterTitle?: string;
+  /** Chapter heading on the journey map, e.g. "Chapter 2 — Market day". */
+  stage?: string;
+  /** For scenario chapters: the underlying scenario definition id. */
+  scenarioId?: string;
+  /** Story nodes that begin the NEXT chapter — the chapter pauses there. */
+  pauseBefore?: string[];
 }
 
 /** The term-long challenge that frames the whole track. */
@@ -114,6 +134,7 @@ export interface Track {
   storyline?: string;
   goal?: TrackGoal;
   assessments: Assessment[];
+  reflections?: ReflectionPrompt[];
   lessons: Lesson[];
   scenarios: Scenario[];
   /** Ordered learning journey. */

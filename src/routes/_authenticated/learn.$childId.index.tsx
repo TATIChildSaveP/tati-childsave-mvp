@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { Screen } from "@/components/learning/primitives";
 import { useChild, useProgress, isDone } from "@/lib/learning/progress";
@@ -153,16 +154,27 @@ function Journey() {
             className="absolute left-[18px] top-4 w-1 rounded-full bg-success transition-all"
             style={{ height: `${Math.max(0, (doneCount / steps.length) * 100)}%` }}
           />
-          {steps.map(({ item, index, done }) => (
-            <TrailStep
-              key={`${item.kind}-${item.id}`}
-              childId={childId}
-              item={item}
-              stepNumber={index + 1}
-              state={done ? "done" : index === currentIndex ? "current" : "locked"}
-              track={track}
-            />
-          ))}
+          {steps.map(({ item, index, done }) => {
+            const stage = item.stage;
+            const newStage = stage && stage !== steps[index - 1]?.item.stage;
+            return (
+              <Fragment key={`${item.kind}-${item.id}`}>
+                {newStage ? (
+                  <li className="relative pt-3">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{stage}</p>
+                  </li>
+                ) : null}
+                <TrailStep
+                  childId={childId}
+                  item={item}
+                  stepNumber={index + 1}
+                  state={done ? "done" : index === currentIndex ? "current" : "locked"}
+                  track={track}
+                />
+              </Fragment>
+            );
+          })}
+
         </ol>
       )}
 

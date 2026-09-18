@@ -54,7 +54,7 @@ export function useProgress(childId: string) {
 
 export interface RecordInput {
   childId: string;
-  itemType: "assessment" | "lesson" | "scenario";
+  itemType: "assessment" | "lesson" | "scenario" | "reflection";
   itemId: string;
   score?: number;
   maxScore?: number;

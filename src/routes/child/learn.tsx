@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
+import { useChildProfiles } from "@/lib/family";
 import { Page, PageHeader, Card, LessonCard, ScenarioCard, ProgressBar } from "@/components/tati";
 import { mockLessons, mockScenarios, mockChildren } from "@/content/mock";
 
@@ -21,6 +22,23 @@ export const Route = createFileRoute("/child/learn")({
 
 function ChildLearn() {
   const child = mockChildren[0]!;
+  const { data: profiles, isLoading } = useChildProfiles();
+  const realChild = profiles?.[0];
+
+  if (isLoading) {
+    return (
+      <Page withBottomNav>
+        <p className="rounded-3xl border border-dashed border-border p-8 text-center text-muted-foreground">
+          Opening your journey…
+        </p>
+      </Page>
+    );
+  }
+
+  // A real learner profile goes to the live adventure trail.
+  if (realChild) {
+    return <Navigate to="/learn/$childId" params={{ childId: realChild.id }} replace />;
+  }
 
   return (
     <Page withBottomNav>
