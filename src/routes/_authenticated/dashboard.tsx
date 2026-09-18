@@ -4,9 +4,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Screen, Card, PrimaryButton, ProgressBar } from "@/components/learning/primitives";
 import { findEvent, useAddChild, useChildren, useProgress } from "@/lib/learning/progress";
-import { getTrack } from "@/lib/learning/track";
-import { buildInsights } from "@/lib/learning/insights";
+import { getTrack, itemPath, itemTitle } from "@/lib/learning/track";
 import { buildSkillGrowth, stillDeveloping, strengths } from "@/lib/learning/growth";
+import { conversationStarters, journeySnapshot, skillSentence } from "@/lib/learning/parent-insights";
 import { computeGamification } from "@/lib/gamification/engine";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
