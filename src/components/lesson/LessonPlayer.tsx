@@ -43,12 +43,13 @@ export function LessonPlayer({
   backTo,
   stepLabel,
   saving,
+
   onComplete,
 }: {
   lesson: Lesson;
   backTo: string;
-  stepLabel?: string;
-  saving?: boolean;
+  stepLabel?: string | undefined;
+  saving?: boolean | undefined;
   onComplete: (draft: LessonDraft) => void;
 }) {
   const storageKey = `tati.lesson.${lesson.id}`;
