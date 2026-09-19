@@ -7,72 +7,87 @@ import {
   getNode,
   summarize,
 } from "./engine";
+import {
+  clearCachedState,
+  loadSession,
+  readCachedState,
+  recordDecision,
+  saveSession,
+  scenarioCacheKey,
+  writeCachedState,
+} from "./session";
 import type { ScenarioDefinition, ScenarioState } from "./types";
 
 export type RunnerStatus = "loading" | "ready" | "resumed" | "interrupted";
 
-function storageKey(childId: string, scenarioId: string) {
-  return `tati.scenario.${childId}.${scenarioId}`;
-}
-
-function readSaved(key: string): ScenarioState | undefined {
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as ScenarioState) : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
 /**
  * Drives one scenario: state, persistence after every decision and resume.
- * All money/branching logic stays in engine.ts.
+ * All money/branching logic stays in engine.ts; storage lives in session.ts,
+ * which saves to the backend (with a local cache for instant resume).
  */
 export function useScenarioRunner(scenario: ScenarioDefinition, childId: string) {
-  const key = storageKey(childId, scenario.id);
+  const key = scenarioCacheKey(childId, scenario.id);
   const [status, setStatus] = useState<RunnerStatus>("loading");
   const [state, setState] = useState<ScenarioState>(() => createInitialState(scenario));
   const loaded = useRef(false);
+  const sessionId = useRef<string | undefined>(undefined);
 
-  // Resume a story the learner left midway.
+  const usable = useCallback(
+    (saved: ScenarioState | undefined) =>
+      !!saved && saved.scenarioId === scenario.id && !!getNode(scenario, saved.nodeId),
+    [scenario],
+  );
+
+  // Resume a story the learner left midway: backend first, local cache as fallback.
   useEffect(() => {
     if (loaded.current) return;
     loaded.current = true;
-    const saved = readSaved(key);
-    if (saved && saved.scenarioId === scenario.id && getNode(scenario, saved.nodeId)) {
-      setState(saved);
-      setStatus(saved.phase === "intro" ? "ready" : "resumed");
-    } else {
-      setStatus("ready");
+    let cancelled = false;
+
+    const cached = readCachedState(key);
+    if (usable(cached)) {
+      setState(cached!);
+      setStatus(cached!.phase === "intro" ? "ready" : "resumed");
     }
-  }, [key, scenario]);
+
+    void loadSession(childId, scenario.id).then((remote) => {
+      if (cancelled) return;
+      if (usable(remote)) {
+        const local = usable(cached) ? cached! : undefined;
+        const newest = local && local.updatedAt > remote!.updatedAt ? local : remote!;
+        setState(newest);
+        setStatus(newest.phase === "intro" ? "ready" : "resumed");
+        writeCachedState(key, newest);
+      } else if (!usable(cached)) {
+        setStatus("ready");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [key, childId, scenario, usable]);
 
   const persist = useCallback(
-    (next: ScenarioState) => {
+    (next: ScenarioState, isDecision = false) => {
       setState(next);
-      try {
-        window.localStorage.setItem(key, JSON.stringify(next));
-      } catch {
-        setStatus("interrupted");
-      }
+      writeCachedState(key, next);
+      void saveSession(childId, next).then((id) => {
+        if (id) sessionId.current = id;
+        if (isDecision && sessionId.current) void recordDecision(childId, sessionId.current, next);
+      });
     },
-    [key],
+    [key, childId],
   );
 
   const start = useCallback(() => persist(beginScenario(state)), [persist, state]);
   const choose = useCallback(
-    (choiceId: string) => persist(applyChoice(scenario, state, choiceId)),
+    (choiceId: string) => persist(applyChoice(scenario, state, choiceId), true),
     [persist, scenario, state],
   );
   const continueOn = useCallback(() => persist(advance(scenario, state)), [persist, scenario, state]);
   const restart = useCallback(() => persist(createInitialState(scenario)), [persist, scenario]);
-  const clearSaved = useCallback(() => {
-    try {
-      window.localStorage.removeItem(key);
-    } catch {
-      /* storage unavailable — nothing to clear */
-    }
-  }, [key]);
+  const clearSaved = useCallback(() => clearCachedState(key), [key]);
 
   const node = useMemo(() => getNode(scenario, state.nodeId), [scenario, state.nodeId]);
   const summary = useMemo(() => summarize(scenario, state), [scenario, state]);

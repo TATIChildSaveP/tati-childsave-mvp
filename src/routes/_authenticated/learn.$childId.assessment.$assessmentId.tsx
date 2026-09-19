@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
 import { AssessmentRunner } from "@/components/assessment/AssessmentRunner";
 import { Screen, TopBar } from "@/components/learning/primitives";
 import { getAssessmentDefinition } from "@/lib/assessment/registry";
+import { saveAssessmentAttempt } from "@/lib/assessment/attempts";
 import type { AssessmentResult } from "@/lib/assessment/types";
 import { useChild } from "@/lib/learning/progress";
 import { useRecordProgress } from "@/lib/progress/service";
@@ -39,6 +40,7 @@ function AssessmentPage() {
   }
 
   async function finish(result: AssessmentResult) {
+    if (definition) await saveAssessmentAttempt(childId, definition, result);
     await record.mutateAsync({
       childId,
       itemType: "assessment",
