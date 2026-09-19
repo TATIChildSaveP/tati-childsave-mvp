@@ -14,6 +14,107 @@ export type Database = {
   }
   public: {
     Tables: {
+      assessment_attempts: {
+        Row: {
+          assessment_id: string
+          assessment_type: string
+          child_profile_id: string
+          competency_scores: Json
+          completed_at: string
+          created_at: string
+          id: string
+          max_points: number
+          points: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          assessment_id: string
+          assessment_type?: string
+          child_profile_id: string
+          competency_scores?: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          max_points?: number
+          points?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          assessment_id?: string
+          assessment_type?: string
+          child_profile_id?: string
+          competency_scores?: Json
+          completed_at?: string
+          created_at?: string
+          id?: string
+          max_points?: number
+          points?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_attempts_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_responses: {
+        Row: {
+          attempt_id: string
+          child_profile_id: string
+          competency: string
+          created_at: string
+          id: string
+          max_points: number
+          option_id: string | null
+          points: number
+          question_id: string
+        }
+        Insert: {
+          attempt_id: string
+          child_profile_id: string
+          competency: string
+          created_at?: string
+          id?: string
+          max_points?: number
+          option_id?: string | null
+          points?: number
+          question_id: string
+        }
+        Update: {
+          attempt_id?: string
+          child_profile_id?: string
+          competency?: string
+          created_at?: string
+          id?: string
+          max_points?: number
+          option_id?: string | null
+          points?: number
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_responses_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "assessment_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_responses_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       child_profiles: {
         Row: {
           age: number
@@ -164,6 +265,76 @@ export type Database = {
           },
         ]
       }
+      feedback: {
+        Row: {
+          child_profile_id: string | null
+          context: string
+          created_at: string
+          id: string
+          message: string | null
+          rating: number | null
+          user_id: string
+        }
+        Insert: {
+          child_profile_id?: string | null
+          context?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          rating?: number | null
+          user_id?: string
+        }
+        Update: {
+          child_profile_id?: string | null
+          context?: string
+          created_at?: string
+          id?: string
+          message?: string | null
+          rating?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feedback_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learner_achievements: {
+        Row: {
+          achievement_id: string
+          awarded_at: string
+          celebrated: boolean
+          child_profile_id: string
+          id: string
+        }
+        Insert: {
+          achievement_id: string
+          awarded_at?: string
+          celebrated?: boolean
+          child_profile_id: string
+          id?: string
+        }
+        Update: {
+          achievement_id?: string
+          awarded_at?: string
+          celebrated?: boolean
+          child_profile_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learner_achievements_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       learning_progress: {
         Row: {
           child_profile_id: string
@@ -285,6 +456,101 @@ export type Database = {
           },
         ]
       }
+      scenario_decisions: {
+        Row: {
+          child_profile_id: string
+          choice_id: string
+          created_at: string
+          day_number: number
+          details: Json
+          id: string
+          node_id: string
+          session_id: string
+        }
+        Insert: {
+          child_profile_id: string
+          choice_id: string
+          created_at?: string
+          day_number?: number
+          details?: Json
+          id?: string
+          node_id: string
+          session_id: string
+        }
+        Update: {
+          child_profile_id?: string
+          choice_id?: string
+          created_at?: string
+          day_number?: number
+          details?: Json
+          id?: string
+          node_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenario_decisions_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scenario_decisions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "scenario_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scenario_sessions: {
+        Row: {
+          child_profile_id: string
+          completed_at: string | null
+          created_at: string
+          current_node_id: string | null
+          day_number: number
+          id: string
+          scenario_id: string
+          state: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          child_profile_id: string
+          completed_at?: string | null
+          created_at?: string
+          current_node_id?: string | null
+          day_number?: number
+          id?: string
+          scenario_id: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          child_profile_id?: string
+          completed_at?: string | null
+          created_at?: string
+          current_node_id?: string | null
+          day_number?: number
+          id?: string
+          scenario_id?: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scenario_sessions_child_profile_id_fkey"
+            columns: ["child_profile_id"]
+            isOneToOne: false
+            referencedRelation: "child_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -296,6 +562,7 @@ export type Database = {
         Args: { _child_profile_id: string }
         Returns: boolean
       }
+      owns_family: { Args: { _family_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never
